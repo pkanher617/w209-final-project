@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% set active = 'home' %}
+{% block title %}W209 Final Project — Overview{% endblock %}
+{% block content %}
+  <h1>Your Music &amp; the World</h1>
+  <p class="lead">
+    An interactive visualization exploring musical taste at two scales: an
+    individual Spotify listener's profile, and the artists and genres that
+    dominate listening around the world. All charts below are
+    <strong>placeholders on synthetic data</strong> while we finalize the
+    Spotify Charts + Exportify pipeline.
+  </p>
+  <div class="tiles">
+    <a href="/personal">
+      <h3>Personal Taste</h3>
+      <p>Audio-feature fingerprints of a single listener's library — tempo,
+        valence, danceability, energy, and popularity.</p>
+    </a>
+    <a href="/global">
+      <h3>Global Map</h3>
+      <p>Which genres and artists dominate listening in each country, on an
+        interactive world map.</p>
+    </a>
+  </div>
+{% endblock %}
