@@ -1,25 +1,139 @@
 {% extends "base.html" %}
-{% set active = 'home' %}
-{% block title %}W209 Final Project — Overview{% endblock %}
+
 {% block content %}
-  <h1>Your Music &amp; the World</h1>
-  <p class="lead">
-    An interactive visualization exploring musical taste at two scales: an
-    individual Spotify listener's profile, and the artists and genres that
-    dominate listening around the world. All charts below are
-    <strong>placeholders on synthetic data</strong> while we finalize the
-    Spotify Charts + Exportify pipeline.
-  </p>
-  <div class="tiles">
-    <a href="/personal">
-      <h3>Personal Taste</h3>
-      <p>Audio-feature fingerprints of a single listener's library — tempo,
-        valence, danceability, energy, and popularity.</p>
-    </a>
-    <a href="/global">
-      <h3>Global Map</h3>
-      <p>Which genres and artists dominate listening in each country, on an
-        interactive world map.</p>
-    </a>
+
+<!-- ───────────────────────── Song Analysis ───────────────────────── -->
+<section id="view-songs" class="view" hidden>
+  <div class="gate" id="gate-exportify-songs" hidden>
+    <h1>Song Analysis</h1>
+    <p class="lead">
+      Upload your playlist export from
+      <a href="https://exportify.net" target="_blank" rel="noopener">Exportify</a>
+      (CSV, one per playlist &mdash; you can select several). Include the audio-features
+      columns when exporting. Everything is parsed locally in your browser.
+    </p>
+    <div class="dropzone" data-kind="exportify" tabindex="0">
+      <strong>Drop Exportify CSV file(s) here</strong>
+      <span>or click to browse</span>
+      <input type="file" accept=".csv,text/csv" multiple hidden>
+    </div>
+    <p class="gate-error" hidden></p>
   </div>
+
+  <div class="loaded" hidden>
+    <div class="view-head">
+      <h1>Song Analysis</h1>
+      <p class="data-status"></p>
+    </div>
+    <div class="chip-row" id="feature-chips"></div>
+    <div class="songs-grid">
+      <aside class="card" id="top-songs-card">
+        <h2>Top 10 by Spotify popularity</h2>
+        <ol class="song-list" id="top-songs-list"></ol>
+      </aside>
+      <div class="card" id="song-center">
+        <!-- filled by songs view: song details + radar, or feature histogram -->
+      </div>
+      <aside class="card" id="song-search-card">
+        <h2>Search songs</h2>
+        <input type="search" id="song-search" placeholder="Title or artist&hellip;" autocomplete="off">
+        <ul class="song-list" id="search-results"></ul>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── Genre ─────────────────────────────── -->
+<section id="view-genre" class="view" hidden>
+  <div class="gate" id="gate-exportify-genre" hidden>
+    <h1>Genre</h1>
+    <p class="lead">
+      Genre analysis uses the same
+      <a href="https://exportify.net" target="_blank" rel="noopener">Exportify</a>
+      CSV as Song Analysis &mdash; upload it once and both pages light up.
+    </p>
+    <div class="dropzone" data-kind="exportify" tabindex="0">
+      <strong>Drop Exportify CSV file(s) here</strong>
+      <span>or click to browse</span>
+      <input type="file" accept=".csv,text/csv" multiple hidden>
+    </div>
+    <p class="gate-error" hidden></p>
+  </div>
+
+  <div class="loaded" hidden>
+    <div class="view-head">
+      <h1>Genre</h1>
+      <p class="data-status"></p>
+    </div>
+    <div class="genre-grid">
+      <div class="card">
+        <h2>Library makeup by genre &mdash; click a bubble to drill down</h2>
+        <div class="chart" id="genre-bubbles"></div>
+        <div class="table-slot" id="genre-table"></div>
+      </div>
+      <div class="card" id="genre-drill">
+        <!-- filled by genre view -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── Streaming Trends ──────────────────────── -->
+<section id="view-trends" class="view" hidden>
+  <div class="gate" id="gate-streaming" hidden>
+    <h1>Streaming Trends</h1>
+    <p class="lead">
+      Request your <strong>Extended Streaming History</strong> from Spotify's
+      <a href="https://www.spotify.com/account/privacy/" target="_blank" rel="noopener">privacy page</a>,
+      unzip <code>my_spotify_data.zip</code>, and select every
+      <code>Streaming_History_Audio_*.json</code> file (video files welcome too).
+      Files are parsed locally and never uploaded.
+    </p>
+    <div class="dropzone" data-kind="streaming" tabindex="0">
+      <strong>Drop Streaming_History_*.json files here</strong>
+      <span>or click to browse</span>
+      <input type="file" accept=".json,application/json" multiple hidden>
+    </div>
+    <p class="gate-error" hidden></p>
+  </div>
+
+  <div class="loaded" hidden>
+    <div class="view-head">
+      <h1>Streaming Trends</h1>
+      <p class="data-status"></p>
+    </div>
+    <div class="tiles" id="trend-tiles"></div>
+    <div class="card">
+      <h2>Hours streamed by year</h2>
+      <div class="chart" id="trend-year"></div>
+      <div class="table-slot"></div>
+    </div>
+    <div class="card">
+      <h2>Hours streamed by month</h2>
+      <div class="chart" id="trend-month"></div>
+      <div class="table-slot"></div>
+    </div>
+    <div class="card">
+      <h2>Hours streamed by time of day</h2>
+      <p class="note">Day of week &times; hour of day, in your local timezone.</p>
+      <div class="chart" id="trend-heatmap"></div>
+      <div class="table-slot"></div>
+    </div>
+    <div class="trend-pair">
+      <div class="card">
+        <h2>Top 10 artists by hours</h2>
+        <div class="chart" id="trend-artists"></div>
+      </div>
+      <div class="card">
+        <h2>Top 10 songs by plays</h2>
+        <div class="chart" id="trend-tracks"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% endblock %}

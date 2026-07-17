@@ -3,37 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}W209 Final Project{% endblock %}</title>
+  <title>{% block title %}Spotify Song/Playlist Analyzer{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <script src="https://cdn.jsdelivr.net/npm/vega@6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 </head>
 <body>
   <header>
     <nav>
-      <span class="brand">Your Music &amp; the World</span>
-      <a href="/" {% if active == 'home' %}class="active"{% endif %}>Overview</a>
-      <a href="/personal" {% if active == 'personal' %}class="active"{% endif %}>Personal Taste</a>
-      <a href="/global" {% if active == 'global' %}class="active"{% endif %}>Global Map</a>
+      <span class="brand">Spotify Song/Playlist Analyzer</span>
+      <a href="#/songs" data-route="songs">Song Analysis</a>
+      <a href="#/genre" data-route="genre">Genre</a>
+      <a href="#/trends" data-route="trends">Streaming Trends</a>
     </nav>
   </header>
   <main>
     {% block content %}{% endblock %}
   </main>
   <footer>
-    W209 Final Project &mdash; Prithvi Kanherkar &amp; Sabrina Lam &mdash; placeholder visualizations
+    W209 Final Project &mdash; Prithvi Kanherkar &amp; Sabrina Lam &mdash;
+    uploaded files are parsed in your browser and never leave your machine.
   </footer>
-  <script>
-    // Fetch an Altair spec from the Flask API and render it with vega-embed.
-    function renderChart(elementId, chartName) {
-      vegaEmbed('#' + elementId, '/api/chart/' + chartName, { actions: false })
-        .catch(function (err) {
-          document.getElementById(elementId).textContent =
-            'Failed to load chart: ' + err.message;
-        });
-    }
-  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

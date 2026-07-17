@@ -1,11 +1,21 @@
+/* Dark motif: near-black planes, white/green text, one green series hue.
+   Chart-facing tokens were validated with the dataviz palette validator
+   (mark green #1aad4e in the dark lightness band, 6.0:1 on #181818;
+   UI accent #1DB954 kept for text where it reads 7.2:1 on the page). */
 :root {
-  --page: #f9f9f7;
-  --surface: #fcfcfb;
-  --ink: #0b0b0b;
-  --ink-secondary: #52514e;
-  --muted: #898781;
-  --border: rgba(11, 11, 11, 0.10);
-  --accent: #2a78d6;
+  color-scheme: dark;
+  --page: #121212;
+  --surface: #181818;
+  --surface-2: #222222;          /* hover wash / inputs */
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --muted: #8a8a85;
+  --border: rgba(255, 255, 255, 0.10);
+  --grid: #2c2c2a;               /* hairline gridlines */
+  --axis: #3a3a37;               /* baseline / axis rules */
+  --accent: #1db954;             /* UI accent (text, nav, focus) */
+  --series-1: #1aad4e;           /* chart mark green (validated) */
+  --series-context: #898781;     /* de-emphasis series (library average) */
 }
 
 * { box-sizing: border-box; }
@@ -14,37 +24,44 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   background: var(--page);
-  color: var(--ink);
+  color: var(--text-primary);
   line-height: 1.55;
 }
+
+a { color: var(--accent); }
 
 header {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 nav {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
   gap: 1.25rem;
+  flex-wrap: wrap;
 }
 
 nav .brand {
   font-weight: 700;
   margin-right: auto;
+  color: var(--accent);
 }
 
 nav a {
-  color: var(--ink-secondary);
+  color: var(--text-secondary);
   text-decoration: none;
   padding: 0.25rem 0;
   border-bottom: 2px solid transparent;
 }
 
-nav a:hover { color: var(--ink); }
+nav a:hover { color: var(--text-primary); }
 
 nav a.active {
   color: var(--accent);
@@ -53,57 +70,394 @@ nav a.active {
 }
 
 main {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 3rem;
+  padding: 1.5rem 1.5rem 3rem;
 }
 
-h1 { font-size: 1.6rem; margin: 0 0 0.5rem; }
-h2 { font-size: 1.2rem; margin: 2rem 0 0.5rem; }
+h1 { font-size: 1.5rem; margin: 0 0 0.35rem; }
+h2 { font-size: 1.02rem; margin: 0 0 0.75rem; color: var(--text-primary); }
 
-p.lead { color: var(--ink-secondary); max-width: 46rem; }
+p.lead { color: var(--text-secondary); max-width: 46rem; }
+p.note { color: var(--muted); font-size: 0.82rem; margin: -0.4rem 0 0.75rem; }
 
+.view-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.data-status { color: var(--muted); font-size: 0.85rem; margin: 0; }
+.data-status button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0;
+  text-decoration: underline;
+}
+
+/* ── upload gates ─────────────────────────────────────────────── */
+.gate { max-width: 46rem; margin: 2.5rem auto; }
+
+.dropzone {
+  margin-top: 1.25rem;
+  border: 2px dashed var(--axis);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 3rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.dropzone:hover, .dropzone:focus-visible, .dropzone.dragover {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.dropzone strong { color: var(--text-primary); }
+.dropzone span { color: var(--muted); font-size: 0.9rem; }
+
+.gate-error { color: #e66767; }
+
+/* ── cards & layout ───────────────────────────────────────────── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 1.25rem;
-  margin: 1.25rem 0;
-  overflow-x: auto;
+  padding: 1.1rem 1.25rem;
+  margin: 0 0 1.25rem;
+  min-width: 0;
 }
 
-.card .chart { min-height: 200px; }
+.card .chart { min-height: 120px; }
 
-.card .note {
-  color: var(--muted);
+.songs-grid {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 240px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.genre-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.trend-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 1000px) {
+  .songs-grid { grid-template-columns: 1fr; }
+  .genre-grid { grid-template-columns: 1fr; }
+}
+
+/* ── feature chips ────────────────────────────────────────────── */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+}
+
+.chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  padding: 0.3rem 0.85rem;
+  font: inherit;
   font-size: 0.85rem;
-  margin: 0.75rem 0 0;
+  cursor: pointer;
 }
 
+.chip:hover { color: var(--text-primary); border-color: var(--axis); }
+
+.chip.active {
+  color: var(--page);
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── song lists (top 10 / search results) ─────────────────────── */
+.song-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.song-list li { margin: 0 0 2px; }
+
+.song-list button {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+}
+
+.song-list button:hover { background: var(--surface-2); color: var(--text-primary); }
+
+.song-list li.selected button {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.song-list .song-title {
+  display: block;
+  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.song-list .song-sub {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.song-list .song-value {
+  margin-left: auto;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.song-list .rank { color: var(--muted); min-width: 1.4em; }
+
+#song-search {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.45rem 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+#song-search:focus { outline: none; border-color: var(--accent); }
+
+.empty-hint { color: var(--muted); font-size: 0.85rem; }
+
+/* ── song detail panel ────────────────────────────────────────── */
+.song-detail-head h2 { font-size: 1.15rem; margin-bottom: 0.1rem; }
+.song-detail-head p { margin: 0 0 0.75rem; color: var(--text-secondary); }
+
+table.detail-table {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+table.detail-table th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 0.22rem 1rem 0.22rem 0;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+table.detail-table td { color: var(--text-primary); padding: 0.22rem 0; }
+
+.feature-desc { color: var(--text-secondary); font-size: 0.9rem; max-width: 40rem; }
+
+/* ── legend (shared by charts) ────────────────────────────────── */
+.legend {
+  display: flex;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+.legend .key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend .swatch-line {
+  width: 14px;
+  height: 0;
+  border-top: 3px solid;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legend .swatch-rect {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+/* ── stat tiles ───────────────────────────────────────────────── */
 .tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
-  margin-top: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  margin: 0 0 1.25rem;
 }
 
-.tiles a {
-  display: block;
+.tile {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 1.25rem;
-  color: inherit;
-  text-decoration: none;
+  padding: 1rem 1.25rem;
 }
 
-.tiles a:hover { border-color: var(--accent); }
+.tile .label { color: var(--text-secondary); font-size: 0.82rem; }
+.tile .value { font-size: 1.7rem; font-weight: 600; color: var(--text-primary); }
+.tile .sub { color: var(--muted); font-size: 0.78rem; }
 
-.tiles h3 { margin: 0 0 0.35rem; font-size: 1.05rem; }
-.tiles p { margin: 0; color: var(--ink-secondary); font-size: 0.9rem; }
+/* ── HTML bar lists (top artists / songs / drill-down) ────────── */
+.bar-list { display: flex; flex-direction: column; gap: 0.45rem; }
+
+.bar-row { font-size: 0.83rem; }
+
+.bar-row .bar-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 2px;
+}
+
+.bar-row .bar-name {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.bar-row .bar-value {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bar-row .bar-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.bar-row .bar-fill {
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--series-1);
+}
+
+/* ── data-table twins ─────────────────────────────────────────── */
+details.data-table { margin-top: 0.75rem; }
+
+details.data-table summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+details.data-table summary:hover { color: var(--text-secondary); }
+
+details.data-table .scroll { max-height: 260px; overflow: auto; margin-top: 0.5rem; }
+
+details.data-table table {
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  width: 100%;
+}
+
+details.data-table th, details.data-table td {
+  text-align: left;
+  padding: 0.25rem 0.75rem 0.25rem 0;
+  border-bottom: 1px solid var(--grid);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+details.data-table th { color: var(--muted); font-weight: 500; }
+
+/* ── svg chart chrome ─────────────────────────────────────────── */
+.chart svg { display: block; max-width: 100%; }
+.chart text { font-family: inherit; }
+
+/* ── tooltip ──────────────────────────────────────────────────── */
+#viz-tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: #262626;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.8rem;
+  max-width: 280px;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+#viz-tooltip[hidden] { display: none; }
+
+#viz-tooltip .tip-title {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+#viz-tooltip .tip-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-secondary);
+}
+
+#viz-tooltip .tip-row .key {
+  width: 12px;
+  border-top: 3px solid;
+  border-radius: 2px;
+  flex: none;
+}
+
+#viz-tooltip .tip-row .val {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
 
 footer {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 1rem 1.5rem 2rem;
   color: var(--muted);
