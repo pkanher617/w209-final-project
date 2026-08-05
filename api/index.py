@@ -12,18 +12,13 @@ app = Flask(
     static_folder=os.path.join(ROOT, "static"),
 )
 
-
 @app.route("/")
 def home():
     return render_template("index.html")
 
-
-# All analysis happens client-side (uploads never leave the browser), so the
-# three views are hash routes inside the single page. Old paths redirect in.
 @app.route("/personal")
 @app.route("/global")
-@app.route("/<path:anything>")
-def legacy(anything=None):
+def legacy():
     return redirect("/")
 
 
