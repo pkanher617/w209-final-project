@@ -1,5 +1,5 @@
 /* Song Analysis view: top-10 list, search, per-song radar, per-feature
-   histograms across the whole library. */
+   histograms across the whole playlist. */
 
 /* global d3 */
 
@@ -158,7 +158,7 @@ function renderResults(query) {
   if (!q) {
     const hint = document.createElement("li");
     hint.className = "empty-hint";
-    hint.textContent = "Type to search your library by title or artist.";
+    hint.textContent = "Type to search your playlist by title or artist.";
     ul.appendChild(hint);
     return;
   }
@@ -248,7 +248,7 @@ function renderSongPanel(center) {
   slot.className = "table-slot";
   center.appendChild(slot);
   renderDataTable(slot,
-    ["Feature", "This song", "Library average"],
+    ["Feature", "This song", "Playlist average"],
     axes.map((a) => [a.label, a.rawText, a.avgRawText]),
     "Data table — radar values");
 }

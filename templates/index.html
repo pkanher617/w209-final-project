@@ -14,12 +14,11 @@
     </p>
     <p class="lead">
       Song Analysis, Compare, and Genre all read from the same Exportify
-      library: upload it once on any of those three pages and the other two
+      playlist: upload it once on any of those three pages and the other two
       pick it up automatically. Compare additionally asks for one more file,
-      a second playlist to measure against that library. Streaming Trends
-      runs on a separate file, your Extended Streaming History, since it
-      tracks your actual listening habits rather than a single playlist's
-      makeup.
+      a second playlist to measure against it. Streaming Trends runs on a
+      separate file, your Extended Streaming History, since it tracks your
+      actual listening habits rather than a single playlist's makeup.
     </p>
     <div class="overview-grid">
       <a class="overview-card" href="#/songs">
@@ -38,7 +37,7 @@
         </svg>
         <h2>Song Analysis</h2>
         <p>Your top 10 songs, a searchable track list, and a 15-point audio-feature
-          radar for any song against your library's average.</p>
+          radar for any song against your playlist's average.</p>
         <p class="overview-needs">Needs: Exportify playlist CSV</p>
         <span class="overview-cta">Open Song Analysis &rarr;</span>
       </a>
@@ -48,10 +47,10 @@
           <circle cx="73" cy="60" r="34" fill="#898781" fill-opacity="0.16" stroke="#898781" stroke-width="2"/>
         </svg>
         <h2>Compare</h2>
-        <p>See how a second playlist stacks up against your library: an
+        <p>See how a second playlist stacks up against your playlist: an
           overlaid audio-feature radar, plus a quick side-by-side look at
           track count, popularity, and top genre.</p>
-        <p class="overview-needs">Needs: Exportify playlist CSV (your library, same file as Song Analysis) plus one more to compare</p>
+        <p class="overview-needs">Needs: Exportify playlist CSV (same file as Song Analysis) plus one more to compare</p>
         <span class="overview-cta">Open Compare &rarr;</span>
       </a>
       <a class="overview-card" href="#/genre">
@@ -116,7 +115,7 @@
     <p class="lead">
       Browse every track in a playlist: see your top songs, search for any track, and
       compare its full audio-feature profile (danceability, energy, tempo, and more)
-      against your library's average. This page and Genre both run on the same file,
+      against your playlist's average. This page and Genre both run on the same file,
       from <a href="https://exportify.net" target="_blank" rel="noopener">Exportify</a>.
       Everything is parsed locally in your browser; nothing is uploaded to a server.
     </p>
@@ -140,7 +139,7 @@
   <div class="loaded" hidden>
     <div class="view-head">
       <h1>Song Analysis</h1>
-      <p class="page-desc">Browse your top songs, search any track, and see its full audio-feature profile against your library average.</p>
+      <p class="page-desc">Browse your top songs, search any track, and see its full audio-feature profile against your playlist average.</p>
       <p class="data-status"></p>
     </div>
     <div class="chip-row" id="feature-chips"></div>
@@ -166,12 +165,12 @@
   <div class="gate" id="gate-compare" hidden>
     <h1>Compare</h1>
     <p class="lead">
-      See how a second playlist stacks up against your library's audio-feature
+      See how a second playlist stacks up against your playlist's audio-feature
       profile and genre mix. Uses the same
       <a href="https://exportify.net" target="_blank" rel="noopener">Exportify</a>
-      file as Song Analysis and Genre for your library &mdash; upload it on any
-      of those three pages and it carries over here automatically. You only
-      need to upload one more playlist: the one you want to compare against it.
+      file as Song Analysis and Genre &mdash; upload it on any of those three
+      pages and it carries over here automatically. You only need to upload
+      one more playlist: the one you want to compare against it.
     </p>
     <ol class="gate-steps">
       <li>Go to <a href="https://exportify.net" target="_blank" rel="noopener">exportify.net</a>
@@ -180,13 +179,13 @@
       <li>Open a playlist and click <strong>Export</strong>. The CSV downloads
         immediately, with every column &mdash; including audio features and genres &mdash;
         included automatically. There are no export settings to configure.</li>
-      <li>Drop your library export into the first slot below (skip this if you've
+      <li>Drop your playlist export into the first slot below (skip this if you've
         already uploaded it on Song Analysis or Genre), then repeat the export for
         the playlist you want to compare and drop it into the second slot.</li>
     </ol>
     <div class="compare-upload-grid">
-      <div class="compare-upload-slot" id="compare-slot-library">
-        <h2>Your library</h2>
+      <div class="compare-upload-slot" id="compare-slot-playlist">
+        <h2>Your playlist</h2>
         <div class="dropzone" data-kind="exportify" tabindex="0">
           <strong>Drop Exportify CSV file(s) here</strong>
           <span>or click to browse</span>
@@ -211,7 +210,7 @@
   <div class="loaded" hidden>
     <div class="view-head">
       <h1>Compare</h1>
-      <p class="page-desc">See how a comparison playlist's audio features and genre mix stack up against your library.</p>
+      <p class="page-desc">See how a comparison playlist's audio features and genre mix stack up against your playlist.</p>
       <p class="data-status"></p>
     </div>
     <div class="card">
@@ -222,6 +221,13 @@
       <h2>Audio-feature profile</h2>
       <div class="chart" id="compare-radar"></div>
       <div class="table-slot" id="compare-radar-table"></div>
+    </div>
+    <div class="chip-row" id="compare-feature-chips"></div>
+    <div class="card">
+      <h2 id="compare-feature-heading">Compare a specific feature</h2>
+      <p class="feature-desc" id="compare-feature-desc"></p>
+      <div class="chart" id="compare-feature-chart"></div>
+      <div class="table-slot" id="compare-feature-table"></div>
     </div>
   </div>
 </section>
@@ -261,7 +267,7 @@
     </div>
     <div class="genre-grid">
       <div class="card">
-        <h2>Library makeup by genre. Click a bubble to drill down</h2>
+        <h2>Playlist makeup by genre. Click a bubble to drill down</h2>
         <div class="chart" id="genre-bubbles"></div>
         <div class="table-slot" id="genre-table"></div>
       </div>
@@ -289,7 +295,7 @@
       <li>Scroll to <strong>Download your data</strong> and tick the box for
         <strong>Extended streaming history</strong> specifically. It's a separate
         option from the basic account data, so make sure that one is checked before
-        you submit the request.</li>
+        you submit the request. Click the <strong>Request Data</strong> button.</li>
       <li>Wait for Spotify's email. Unlike Exportify, this isn't instant: it usually
         takes a few days, and can take up to about a month.</li>
       <li>When the email arrives, download and unzip <code>my_spotify_data.zip</code>.</li>

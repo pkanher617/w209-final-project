@@ -67,13 +67,13 @@ export const FEATURES = [
   },
   {
     key: "length", label: "Length", column: "durationMs",
-    desc: "Track duration. Shown on the radar relative to the shortest and longest songs in your library.",
+    desc: "Track duration. Shown on the radar relative to the shortest and longest songs in your playlist.",
     normBy: "minmax",
     fmt: fmtDuration,
   },
   {
     key: "tempo", label: "Tempo",
-    desc: "Estimated tempo in beats per minute (BPM). Shown on the radar relative to the slowest and fastest songs in your library.",
+    desc: "Estimated tempo in beats per minute (BPM). Shown on the radar relative to the slowest and fastest songs in your playlist.",
     normBy: "minmax",
     fmt: (v) => `${Math.round(v)} BPM`,
   },
@@ -109,7 +109,7 @@ export const FEATURES = [
   },
   {
     key: "release_year", label: "Release year", column: "releaseYear",
-    desc: "The year the track's album was released, from your library's oldest to newest.",
+    desc: "The year the track's album was released, from your playlist's oldest to newest.",
     normBy: "minmax",
     fmt: (v) => String(Math.round(v)),
     discrete: false,
@@ -186,8 +186,8 @@ function resolveColumns(headers) {
 }
 
 // Parses Exportify CSV(s) into a track list + the file names they came from,
-// without touching the shared store — used both by the main library upload
-// (loadExportifyFiles below) and by Compare, which keeps two playlists separate.
+// without touching the shared store — used both by the main playlist upload
+// (loadExportifyFiles below) and by Compare, which keeps the comparison playlist separate.
 export async function parseExportifyFiles(files) {
   const rows = [];
   const names = [];
@@ -256,7 +256,7 @@ export function computeTrackStats(tracks) {
       count: values.length,
     };
   }
-  // Mean of normalized values — the "library average" radar polygon.
+  // Mean of normalized values — the "playlist average" radar polygon.
   for (const f of FEATURES) {
     const norms = tracks
       .map((t) => featureNorm(t, f, stats))

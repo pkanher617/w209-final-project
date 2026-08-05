@@ -1,16 +1,21 @@
 /* Compare view: overlays a second "comparison" playlist against the same
-   main library (store.tracks) used by Song Analysis and Genre — uploading
-   on any of those three pages fills the same shared library, so Compare only
+   main playlist (store.tracks) used by Song Analysis and Genre — uploading
+   on any of those three pages fills the same shared playlist, so Compare only
    ever needs ONE new upload of its own. The comparison playlist is kept in
    this module's own local state, never merged into the shared store. */
 
 /* global d3 */
 
-import { store, FEATURES, featureFormat, parseExportifyFiles, computeTrackStats } from "../data.js";
-import { radarChart, renderDataTable } from "../charts.js";
+import {
+  store, FEATURES, featureValue, featureFormat, parseExportifyFiles, computeTrackStats,
+} from "../data.js";
+import {
+  radarChart, comparisonHistogramChart, comparisonColumnChart, renderDataTable,
+} from "../charts.js";
 
 const state = {
   comparison: null, // { tracks, stats, names } | null
+  feature: FEATURES[0].key, // selected feature for the per-feature comparison chart
 };
 
 export async function loadComparisonPlaylist(files) {
@@ -19,7 +24,7 @@ export async function loadComparisonPlaylist(files) {
   renderCompare();
 }
 
-function clearLibrary() {
+function clearPlaylist() {
   store.tracks = null;
   store.trackStats = null;
   store.exportifyFiles = [];
@@ -36,7 +41,7 @@ export function renderCompare() {
   const gate = root.querySelector(".gate");
   const loaded = root.querySelector(".loaded");
 
-  renderLibrarySlot();
+  renderPlaylistSlot();
   renderComparisonSlot();
 
   const ready = store.tracks && state.comparison;
@@ -47,10 +52,12 @@ export function renderCompare() {
   renderStatus(loaded);
   renderStats();
   renderRadar();
+  renderFeatureChips();
+  renderFeatureComparison();
 }
 
-function renderLibrarySlot() {
-  const slot = document.getElementById("compare-slot-library");
+function renderPlaylistSlot() {
+  const slot = document.getElementById("compare-slot-playlist");
   const dropzone = slot.querySelector(".dropzone");
   const summary = slot.querySelector(".data-status");
 
@@ -67,7 +74,7 @@ function renderLibrarySlot() {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.textContent = "replace file";
-  btn.addEventListener("click", clearLibrary);
+  btn.addEventListener("click", clearPlaylist);
   summary.appendChild(btn);
 }
 
@@ -99,11 +106,11 @@ function renderStatus(loaded) {
   el.replaceChildren();
 
   el.appendChild(document.createTextNode(
-    `Library: ${d3.format(",")(store.tracks.length)} tracks from ${store.exportifyFiles.join(", ")} `));
+    `Playlist: ${d3.format(",")(store.tracks.length)} tracks from ${store.exportifyFiles.join(", ")} `));
   const btnLib = document.createElement("button");
   btnLib.type = "button";
   btnLib.textContent = "replace file";
-  btnLib.addEventListener("click", clearLibrary);
+  btnLib.addEventListener("click", clearPlaylist);
   el.appendChild(btnLib);
 
   el.appendChild(document.createTextNode(" · "));
@@ -115,6 +122,15 @@ function renderStatus(loaded) {
   btnCmp.textContent = "replace file";
   btnCmp.addEventListener("click", clearComparison);
   el.appendChild(btnCmp);
+}
+
+// Short chart-facing labels ("Playlist (file.csv)") — used in the radar
+// legend, stats table headers, and per-feature comparison chart, where a
+// full "Comparison playlist" reads redundant once the filename is appended.
+function chartLabel(base, names) {
+  if (!names || !names.length) return base;
+  const suffix = names.length === 1 ? names[0] : `${names.length} files`;
+  return `${base} (${suffix})`;
 }
 
 function topGenre(tracks) {
@@ -140,6 +156,8 @@ function renderStats() {
   const libStats = store.trackStats;
   const cmpTracks = state.comparison.tracks;
   const cmpStats = state.comparison.stats;
+  const labelA = chartLabel("Playlist", store.exportifyFiles);
+  const labelB = chartLabel("Comparison", state.comparison.names);
 
   const rows = [
     ["Tracks", d3.format(",")(libTracks.length), d3.format(",")(cmpTracks.length)],
@@ -155,7 +173,7 @@ function renderStats() {
   table.className = "compare-stats-table";
   const thead = document.createElement("thead");
   const hr = document.createElement("tr");
-  for (const label of ["", "Library", "Comparison playlist"]) {
+  for (const label of ["", labelA, labelB]) {
     const th = document.createElement("th");
     th.textContent = label;
     hr.appendChild(th);
@@ -184,6 +202,9 @@ function renderRadar() {
   const chartEl = document.getElementById("compare-radar");
   const libStats = store.trackStats;
   const cmpStats = state.comparison.stats;
+  const labelA = chartLabel("Playlist", store.exportifyFiles);
+  const labelB = chartLabel("Comparison", state.comparison.names);
+
   const axes = FEATURES.map((f) => ({
     label: f.label,
     desc: f.desc,
@@ -192,11 +213,85 @@ function renderRadar() {
     avgNorm: cmpStats[f.key].meanNorm,
     avgRawText: featureFormat(f, cmpStats[f.key].mean),
   }));
-  radarChart(chartEl, axes, { songLabel: "Library", avgLabel: "Comparison playlist" });
+  radarChart(chartEl, axes, { songLabel: labelA, avgLabel: labelB });
 
   const slot = document.getElementById("compare-radar-table");
   renderDataTable(slot,
-    ["Feature", "Library", "Comparison playlist"],
+    ["Feature", labelA, labelB],
     axes.map((ax) => [ax.label, ax.rawText, ax.avgRawText]),
     "Data table — audio-feature comparison");
+}
+
+function histFormatter(f) {
+  if (f.key === "release_year") return d3.format("d");
+  if (f.key === "length") return (v) => featureFormat(f, v);
+  return d3.format("~g");
+}
+
+function renderFeatureChips() {
+  const row = document.getElementById("compare-feature-chips");
+  row.replaceChildren();
+  for (const f of FEATURES) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip" + (state.feature === f.key ? " active" : "");
+    chip.textContent = f.label;
+    chip.addEventListener("click", () => {
+      state.feature = state.feature === f.key ? null : f.key;
+      renderFeatureChips();
+      renderFeatureComparison();
+    });
+    row.appendChild(chip);
+  }
+}
+
+function renderFeatureComparison() {
+  const heading = document.getElementById("compare-feature-heading");
+  const desc = document.getElementById("compare-feature-desc");
+  const chartEl = document.getElementById("compare-feature-chart");
+  const tableSlot = document.getElementById("compare-feature-table");
+
+  const f = FEATURES.find((x) => x.key === state.feature);
+  if (!f) {
+    heading.textContent = "Compare a specific feature";
+    desc.textContent = "Select an audio feature above to compare its distribution between the two playlists.";
+    chartEl.replaceChildren();
+    tableSlot.replaceChildren();
+    return;
+  }
+
+  heading.textContent = f.label;
+  desc.textContent = f.desc;
+
+  const labelA = chartLabel("Playlist", store.exportifyFiles);
+  const labelB = chartLabel("Comparison", state.comparison.names);
+
+  if (f.discrete && f.categories) {
+    const rawA = store.tracks.map((t) => featureValue(t, f)).filter((v) => v != null && !Number.isNaN(v));
+    const rawB = state.comparison.tracks.map((t) => featureValue(t, f)).filter((v) => v != null && !Number.isNaN(v));
+    const countsA = d3.rollup(rawA, (v) => v.length, (v) => Math.round(v));
+    const countsB = d3.rollup(rawB, (v) => v.length, (v) => Math.round(v));
+    const categories = f.categories.map((c) => c.label);
+    const valuesA = f.categories.map((c) => (countsA.get(c.value) ?? 0) / (rawA.length || 1));
+    const valuesB = f.categories.map((c) => (countsB.get(c.value) ?? 0) / (rawB.length || 1));
+
+    comparisonColumnChart(chartEl, categories, valuesA, valuesB, { labelA, labelB });
+    renderDataTable(tableSlot,
+      [f.label, labelA, labelB],
+      categories.map((c, i) => [c, d3.format(".0%")(valuesA[i]), d3.format(".0%")(valuesB[i])]),
+      `Data table — ${f.label.toLowerCase()} comparison`);
+  } else {
+    const valuesA = store.tracks.map((t) => featureValue(t, f)).filter((v) => v != null && !Number.isNaN(v));
+    const valuesB = state.comparison.tracks.map((t) => featureValue(t, f)).filter((v) => v != null && !Number.isNaN(v));
+    const xFmt = histFormatter(f);
+
+    const combined = comparisonHistogramChart(chartEl, valuesA, valuesB, {
+      xFmt, labelA, labelB,
+      bins: f.key === "release_year" ? Math.min(30, new Set([...valuesA, ...valuesB]).size) : 20,
+    });
+    renderDataTable(tableSlot,
+      ["Range", labelA, labelB],
+      combined.map((b) => [`${xFmt(b.x0)} – ${xFmt(b.x1)}`, d3.format(".0%")(b.pctA), d3.format(".0%")(b.pctB)]),
+      `Data table — ${f.label.toLowerCase()} comparison`);
+  }
 }

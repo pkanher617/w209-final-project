@@ -16,7 +16,7 @@
   --accent: #1db954;             /* UI accent (text, nav, focus) */
   --accent-wash: rgba(29, 185, 84, 0.14); /* hover wash for accent-bordered controls */
   --series-1: #1aad4e;           /* chart mark green (validated) */
-  --series-context: #898781;     /* de-emphasis series (library average) */
+  --series-context: #898781;     /* de-emphasis series (playlist average) */
 }
 
 
@@ -569,7 +569,7 @@ details.data-table th, details.data-table td {
 details.data-table th { color: var(--muted); font-weight: 500; }
 
 /* ── svg chart chrome ─────────────────────────────────────────── */
-.chart svg { display: block; max-width: 100%; }
+.chart svg { display: block; max-width: 100%; margin: 0 auto; }
 .chart text { font-family: inherit; }
 
 /* ── tooltip ──────────────────────────────────────────────────── */

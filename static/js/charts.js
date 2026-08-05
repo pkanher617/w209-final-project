@@ -7,7 +7,7 @@
 export const COLORS = {
   series: "#1aad4e",       // validated mark green
   seriesLift: "#25c05b",   // hover lift
-  context: "#898781",      // de-emphasis series (library average)
+  context: "#898781",      // de-emphasis series (playlist average)
   surface: "#181818",
   grid: "#2c2c2a",
   axis: "#3a3a37",
@@ -580,7 +580,7 @@ export function heatmapChart(el, cells, {
 export function radarChart(el, axes, {
   size = 460,
   songLabel = "This song",
-  avgLabel = "Library average",
+  avgLabel = "Playlist average",
 } = {}) {
   const width = Math.min(chartWidth(el, size), 560);
   const height = Math.min(width, size);
@@ -623,7 +623,7 @@ export function radarChart(el, axes, {
 
   const polygon = (get) => axes.map((ax, i) => pt(i, Math.max(0, get(ax) ?? 0))).map((p) => p.join(",")).join(" ");
 
-  // library average — context series, drawn first so the song sits on top
+  // playlist average — context series, drawn first so the song sits on top
   if (axes.some((ax) => ax.avgNorm != null)) {
     svg.append("polygon")
       .attr("points", polygon((ax) => ax.avgNorm))
@@ -672,6 +672,219 @@ export function radarChart(el, axes, {
   renderLegend(el, [
     { label: songLabel, color: COLORS.series, mark: "line" },
     { label: avgLabel, color: COLORS.context, mark: "line" },
+  ]);
+}
+
+// ── comparison histogram (two series, step-outline overlay) ─────────────────
+// For comparing the same continuous feature's distribution across two
+// playlists. Percent-of-playlist on the y-axis (not raw count) keeps the
+// comparison fair when the two playlists are different sizes.
+
+export function comparisonHistogramChart(el, seriesA, seriesB, {
+  height = 320,
+  bins = 20,
+  xFmt = d3.format("~g"),
+  labelA = "A",
+  labelB = "B",
+} = {}) {
+  const width = chartWidth(el);
+  const m = { top: 22, right: 14, bottom: 30, left: 46 };
+  const svg = baseSvg(el, width, height);
+
+  const all = [...seriesA, ...seriesB];
+  const x = d3.scaleLinear().domain(d3.extent(all)).nice().range([m.left, width - m.right]);
+  const binGen = d3.bin().domain(x.domain()).thresholds(x.ticks(bins));
+  const rawA = binGen(seriesA);
+  const rawB = binGen(seriesB);
+  const combined = rawA.map((b, i) => ({
+    x0: b.x0, x1: b.x1,
+    pctA: seriesA.length ? b.length / seriesA.length : 0,
+    pctB: seriesB.length ? rawB[i].length / seriesB.length : 0,
+  }));
+
+  const y = d3.scaleLinear()
+    .domain([0, (d3.max(combined, (d) => Math.max(d.pctA, d.pctB)) || 0.01) * 1.15])
+    .range([height - m.bottom, m.top]);
+
+  yGrid(svg, y, m.left, width - m.right);
+  svg.append("g")
+    .selectAll("text")
+    .data(y.ticks(4))
+    .join("text")
+    .attr("x", m.left - 8).attr("y", (d) => y(d))
+    .attr("dy", "0.32em").attr("text-anchor", "end")
+    .attr("fill", COLORS.muted).style("font", AXIS_FONT)
+    .text(d3.format(".0%"));
+
+  svg.append("line")
+    .attr("x1", m.left).attr("x2", width - m.right)
+    .attr("y1", y(0)).attr("y2", y(0))
+    .attr("stroke", COLORS.axis);
+
+  svg.append("g")
+    .selectAll("text")
+    .data(x.ticks(Math.min(10, Math.floor(width / 70))))
+    .join("text")
+    .attr("x", (d) => x(d)).attr("y", height - m.bottom + 16)
+    .attr("text-anchor", "middle").attr("fill", COLORS.muted)
+    .style("font", AXIS_FONT).text(xFmt);
+
+  // Step-outline area: each bin contributes two points at its own height, so
+  // consecutive segments read as a staircase rather than needing a curve interpolator.
+  const stepPoints = (accessor) => {
+    const pts = [];
+    for (const b of combined) {
+      pts.push([b.x0, accessor(b)]);
+      pts.push([b.x1, accessor(b)]);
+    }
+    return pts;
+  };
+  const areaGen = d3.area().x((d) => x(d[0])).y0(y(0)).y1((d) => y(d[1]));
+  const lineGen = d3.line().x((d) => x(d[0])).y((d) => y(d[1]));
+
+  const ptsA = stepPoints((b) => b.pctA);
+  const ptsB = stepPoints((b) => b.pctB);
+
+  // context series drawn first so the primary playlist sits on top, matching radarChart
+  svg.append("path").datum(ptsB)
+    .attr("fill", COLORS.context).attr("fill-opacity", 0.16).attr("d", areaGen);
+  svg.append("path").datum(ptsB)
+    .attr("fill", "none").attr("stroke", COLORS.context).attr("stroke-width", 2)
+    .attr("stroke-linejoin", "round").attr("d", lineGen);
+
+  svg.append("path").datum(ptsA)
+    .attr("fill", COLORS.series).attr("fill-opacity", 0.18).attr("d", areaGen);
+  svg.append("path").datum(ptsA)
+    .attr("fill", "none").attr("stroke", COLORS.series).attr("stroke-width", 2)
+    .attr("stroke-linejoin", "round").attr("d", lineGen);
+
+  const cross = svg.append("line")
+    .attr("y1", m.top).attr("y2", height - m.bottom)
+    .attr("stroke", COLORS.axis).attr("visibility", "hidden");
+
+  svg.append("rect")
+    .attr("x", m.left).attr("y", m.top)
+    .attr("width", width - m.left - m.right)
+    .attr("height", height - m.top - m.bottom)
+    .attr("fill", "transparent")
+    .on("pointermove", (evt) => {
+      const [mx] = d3.pointer(evt);
+      const xv = x.invert(mx);
+      const b = combined.find((d) => xv >= d.x0 && xv < d.x1) ?? combined[combined.length - 1];
+      if (!b) return;
+      const bx = (x(b.x0) + x(b.x1)) / 2;
+      cross.attr("x1", bx).attr("x2", bx).attr("visibility", "visible");
+      tip.show(evt, {
+        title: `${xFmt(b.x0)} – ${xFmt(b.x1)}`,
+        rows: [
+          { label: labelA, value: d3.format(".0%")(b.pctA), color: COLORS.series },
+          { label: labelB, value: d3.format(".0%")(b.pctB), color: COLORS.context },
+        ],
+      });
+    })
+    .on("pointerleave", () => {
+      cross.attr("visibility", "hidden");
+      tip.hide();
+    });
+
+  renderLegend(el, [
+    { label: labelA, color: COLORS.series, mark: "line" },
+    { label: labelB, color: COLORS.context, mark: "line" },
+  ]);
+
+  return combined;
+}
+
+// ── comparison column chart (two series, grouped bars) ───────────────────────
+// For comparing a discrete feature's distribution across two playlists.
+// Percent-of-playlist, same rationale as comparisonHistogramChart.
+
+export function comparisonColumnChart(el, categories, valuesA, valuesB, {
+  height = 320,
+  labelA = "A",
+  labelB = "B",
+} = {}) {
+  const width = chartWidth(el);
+  const m = { top: 22, right: 8, bottom: 28, left: 46 };
+  const svg = baseSvg(el, width, height);
+
+  const x0 = d3.scaleBand()
+    .domain(categories)
+    .range([m.left, width - m.right])
+    .paddingInner(0.35).paddingOuter(0.1);
+  const x1 = d3.scaleBand()
+    .domain(["a", "b"])
+    .range([0, x0.bandwidth()])
+    .padding(0.12);
+
+  const maxV = Math.max(d3.max(valuesA) || 0, d3.max(valuesB) || 0);
+  const y = d3.scaleLinear().domain([0, (maxV || 0.01) * 1.15]).range([height - m.bottom, m.top]);
+
+  yGrid(svg, y, m.left, width - m.right);
+  svg.append("g")
+    .selectAll("text")
+    .data(y.ticks(4))
+    .join("text")
+    .attr("x", m.left - 8).attr("y", (d) => y(d))
+    .attr("dy", "0.32em").attr("text-anchor", "end")
+    .attr("fill", COLORS.muted).style("font", AXIS_FONT)
+    .text(d3.format(".0%"));
+
+  svg.append("line")
+    .attr("x1", m.left).attr("x2", width - m.right)
+    .attr("y1", y(0)).attr("y2", y(0))
+    .attr("stroke", COLORS.axis);
+
+  svg.append("g")
+    .selectAll("text")
+    .data(categories)
+    .join("text")
+    .attr("x", (c) => x0(c) + x0.bandwidth() / 2)
+    .attr("y", height - m.bottom + 16)
+    .attr("text-anchor", "middle")
+    .attr("fill", COLORS.muted).style("font", AXIS_FONT)
+    .text((c) => c);
+
+  const barsG = svg.append("g");
+  const drawSeries = (key, values, color) => {
+    barsG.selectAll(`path.series-${key}`)
+      .data(categories.map((c, i) => ({ cat: c, value: values[i] ?? 0 })))
+      .join("path")
+      .attr("class", `series-${key}`)
+      .attr("d", (d) => roundedColumnPath(
+        x0(d.cat) + x1(key), y(d.value),
+        x1.bandwidth(), Math.max(0, y(0) - y(d.value)), 3))
+      .attr("fill", color);
+  };
+  drawSeries("a", valuesA, COLORS.series);
+  drawSeries("b", valuesB, COLORS.context);
+
+  svg.append("g")
+    .selectAll("rect")
+    .data(categories)
+    .join("rect")
+    .attr("x", (c) => x0(c)).attr("y", m.top)
+    .attr("width", x0.bandwidth()).attr("height", height - m.top - m.bottom)
+    .attr("fill", "transparent")
+    .attr("tabindex", 0).attr("role", "img")
+    .attr("aria-label", (c, i) => `${c}: ${labelA} ${d3.format(".0%")(valuesA[i] ?? 0)}, ${labelB} ${d3.format(".0%")(valuesB[i] ?? 0)}`)
+    .on("pointerenter focus", function (evt, c) {
+      const i = categories.indexOf(c);
+      const e = evt.clientX != null ? evt : fakeEventFor(this);
+      tip.show(e, {
+        title: c,
+        rows: [
+          { label: labelA, value: d3.format(".0%")(valuesA[i] ?? 0), color: COLORS.series },
+          { label: labelB, value: d3.format(".0%")(valuesB[i] ?? 0), color: COLORS.context },
+        ],
+      });
+    })
+    .on("pointermove", (evt) => tip.move(evt))
+    .on("pointerleave blur", () => tip.hide());
+
+  renderLegend(el, [
+    { label: labelA, color: COLORS.series, mark: "rect" },
+    { label: labelB, color: COLORS.context, mark: "rect" },
   ]);
 }
 

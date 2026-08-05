@@ -1,4 +1,4 @@
-/* Genre view: packed bubble chart of the library's genres with a
+/* Genre view: packed bubble chart of the playlist's genres with a
    drill-down panel of the most popular songs in the selected genre. */
 
 /* global d3 */
@@ -30,10 +30,7 @@ export function renderGenre() {
   }
   if (!state.selected && genres.length) state.selected = genres[0].name;
 
-  const status = loaded.querySelector(".data-status");
-  status.textContent =
-    `${d3.format(",")(store.tracks.length)} tracks · ${d3.format(",")(genres.length)} genres`
-    + (untagged ? ` · ${d3.format(",")(untagged)} tracks without genre tags` : "");
+  renderStatus(loaded, genres, untagged);
 
   const bubblesEl = document.getElementById("genre-bubbles");
   bubbleChart(bubblesEl, genres.slice(0, MAX_BUBBLES), {
@@ -56,6 +53,25 @@ export function renderGenre() {
     "Data table — all genres");
 
   renderDrill(genres);
+}
+
+function renderStatus(loaded, genres, untagged) {
+  const el = loaded.querySelector(".data-status");
+  el.replaceChildren();
+  el.appendChild(document.createTextNode(
+    `${d3.format(",")(store.tracks.length)} tracks · ${d3.format(",")(genres.length)} genres`
+    + (untagged ? ` · ${d3.format(",")(untagged)} tracks without genre tags` : "")
+    + " · "));
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.textContent = "replace file";
+  btn.addEventListener("click", () => {
+    store.tracks = null;
+    store.trackStats = null;
+    store.exportifyFiles = [];
+    renderGenre();
+  });
+  el.appendChild(btn);
 }
 
 function genreRollup() {
