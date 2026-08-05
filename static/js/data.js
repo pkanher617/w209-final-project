@@ -185,7 +185,10 @@ function resolveColumns(headers) {
   return map;
 }
 
-export async function loadExportifyFiles(files) {
+// Parses Exportify CSV(s) into a track list + the file names they came from,
+// without touching the shared store — used both by the main library upload
+// (loadExportifyFiles below) and by Compare, which keeps two playlists separate.
+export async function parseExportifyFiles(files) {
   const rows = [];
   const names = [];
   for (const file of files) {
@@ -229,13 +232,18 @@ export async function loadExportifyFiles(files) {
   });
   if (!tracks.length) throw new Error("No tracks found in the uploaded file(s).");
 
+  return { tracks, names };
+}
+
+export async function loadExportifyFiles(files) {
+  const { tracks, names } = await parseExportifyFiles(files);
   store.tracks = tracks;
   store.trackStats = computeTrackStats(tracks);
   store.exportifyFiles = names;
   emit();
 }
 
-function computeTrackStats(tracks) {
+export function computeTrackStats(tracks) {
   const stats = {};
   for (const f of FEATURES) {
     const values = tracks

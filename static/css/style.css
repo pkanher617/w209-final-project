@@ -165,6 +165,51 @@ p.note { color: var(--muted); font-size: 0.82rem; margin: -0.4rem 0 0.75rem; }
   color: var(--text-secondary);
 }
 
+/* ── compare ──────────────────────────────────────────────────── */
+.compare-upload-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.compare-upload-slot h2 { font-size: 0.95rem; margin-bottom: 0.6rem; color: var(--text-secondary); }
+.compare-upload-slot .data-status { margin-top: 0.6rem; }
+
+.compare-stats-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.compare-stats-table th, .compare-stats-table td {
+  text-align: left;
+  padding: 0.5rem 1rem 0.5rem 0;
+  border-bottom: 1px solid var(--grid);
+}
+
+.compare-stats-table thead th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.compare-stats-table tbody th {
+  color: var(--muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.compare-stats-table td {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.compare-stats-table tr:last-child th,
+.compare-stats-table tr:last-child td { border-bottom: none; }
+
 /* ── upload gates ─────────────────────────────────────────────── */
 .gate { max-width: 46rem; margin: 2.5rem auto; }
 .gate .lead { margin-bottom: 1.1rem; }
@@ -191,6 +236,12 @@ p.note { color: var(--muted); font-size: 0.82rem; margin: -0.4rem 0 0.75rem; }
   flex-direction: column;
   gap: 0.35rem;
 }
+
+/* An explicit `display` always beats the UA default `[hidden]{display:none}`
+   rule (author origin outranks user-agent origin) — reassert it here so
+   Compare can hide a single slot's dropzone without the flex box (and the
+   native file input inside it) staying visibly rendered underneath. */
+.dropzone[hidden] { display: none; }
 
 .dropzone:hover, .dropzone:focus-visible, .dropzone.dragover {
   border-color: var(--accent);

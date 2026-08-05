@@ -6,17 +6,19 @@ import { onStoreChange, loadExportifyFiles, loadStreamingFiles } from "./data.js
 import { renderSongs } from "./views/songs.js";
 import { renderGenre } from "./views/genre.js";
 import { renderTrends } from "./views/trends.js";
+import { renderCompare, loadPlaylistA, loadPlaylistB } from "./views/compare.js";
 
 const ROUTES = {
   overview: () => {}, // static markup, nothing to render
   songs: renderSongs,
   genre: renderGenre,
+  compare: renderCompare,
   trends: renderTrends,
   about: () => {}, // static markup, nothing to render
 };
 
 function currentRoute() {
-  const m = location.hash.match(/^#\/(overview|songs|genre|trends|about)\b/);
+  const m = location.hash.match(/^#\/(overview|songs|genre|compare|trends|about)\b/);
   return m ? m[1] : null;
 }
 
@@ -40,11 +42,16 @@ function navigate() {
 const LOADERS = {
   exportify: loadExportifyFiles,
   streaming: loadStreamingFiles,
+  "compare-a": loadPlaylistA,
+  "compare-b": loadPlaylistB,
 };
 
 function wireDropzone(zone) {
   const input = zone.querySelector("input[type=file]");
-  const errorEl = zone.closest(".gate").querySelector(".gate-error");
+  // The error paragraph is always a sibling within the dropzone's own
+  // immediate container — a whole ".gate" for the single-upload pages,
+  // one of Compare's two upload slots for the two-upload page.
+  const errorEl = zone.parentElement.querySelector(".gate-error");
   const loader = LOADERS[zone.dataset.kind];
 
   async function handle(files) {

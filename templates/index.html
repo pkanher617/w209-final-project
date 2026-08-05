@@ -49,6 +49,17 @@
         <p class="overview-needs">Needs: Exportify playlist CSV (same file as Song Analysis)</p>
         <span class="overview-cta">Open Genre &rarr;</span>
       </a>
+      <a class="overview-card" href="#/compare">
+        <svg class="preview" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="47" cy="60" r="34" fill="#1aad4e" fill-opacity="0.2" stroke="#1aad4e" stroke-width="2"/>
+          <circle cx="73" cy="60" r="34" fill="#898781" fill-opacity="0.16" stroke="#898781" stroke-width="2"/>
+        </svg>
+        <h2>Compare</h2>
+        <p>Overlay two playlists' average audio-feature profiles, plus a
+          quick side-by-side look at track count, popularity, and top genre.</p>
+        <p class="overview-needs">Needs: two Exportify playlist CSVs</p>
+        <span class="overview-cta">Open Compare &rarr;</span>
+      </a>
       <a class="overview-card" href="#/trends">
         <svg class="preview" viewBox="0 0 120 120" aria-hidden="true">
           <g>
@@ -182,6 +193,68 @@
       <div class="card" id="genre-drill">
         <!-- filled by genre view -->
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── Compare ───────────────────────────── -->
+<section id="view-compare" class="view" hidden>
+  <div class="gate" id="gate-compare" hidden>
+    <h1>Compare</h1>
+    <p class="lead">
+      Upload two separate playlists to see how their audio-feature profiles
+      and genre mix stack up against each other; same
+      <a href="https://exportify.net" target="_blank" rel="noopener">Exportify</a>
+      export as Song Analysis and Genre, just kept as two playlists instead
+      of one combined library.
+    </p>
+    <ol class="gate-steps">
+      <li>Go to <a href="https://exportify.net" target="_blank" rel="noopener">exportify.net</a>
+        and sign in with your Spotify account. Exportify will ask you to link your
+        account and agree to Spotify's terms.</li>
+      <li>Open a playlist, then in Exportify's export settings make sure
+        <strong>audio features</strong> and <strong>genres</strong> are turned on.</li>
+      <li>Click <strong>Export</strong>. The CSV downloads immediately, no waiting required.</li>
+      <li>Repeat for a second playlist, then drop each CSV into its matching slot below.</li>
+    </ol>
+    <div class="compare-upload-grid">
+      <div class="compare-upload-slot" id="compare-slot-a">
+        <h2>Playlist A</h2>
+        <div class="dropzone" data-kind="compare-a" tabindex="0">
+          <strong>Drop Exportify CSV here</strong>
+          <span>or click to browse</span>
+          <input type="file" accept=".csv,text/csv" multiple hidden>
+        </div>
+        <p class="data-status" hidden></p>
+        <p class="gate-error" hidden></p>
+      </div>
+      <div class="compare-upload-slot" id="compare-slot-b">
+        <h2>Playlist B</h2>
+        <div class="dropzone" data-kind="compare-b" tabindex="0">
+          <strong>Drop Exportify CSV here</strong>
+          <span>or click to browse</span>
+          <input type="file" accept=".csv,text/csv" multiple hidden>
+        </div>
+        <p class="data-status" hidden></p>
+        <p class="gate-error" hidden></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="loaded" hidden>
+    <div class="view-head">
+      <h1>Compare</h1>
+      <p class="page-desc">See how two playlists' audio features and genre mix compare.</p>
+      <p class="data-status"></p>
+    </div>
+    <div class="card">
+      <h2>Track and genre stats</h2>
+      <div id="compare-stats"></div>
+    </div>
+    <div class="card">
+      <h2>Audio-feature profile</h2>
+      <div class="chart" id="compare-radar"></div>
+      <div class="table-slot" id="compare-radar-table"></div>
     </div>
   </div>
 </section>
