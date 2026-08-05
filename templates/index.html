@@ -13,7 +13,7 @@
       upload is ever sent to a server.
     </p>
     <p class="lead">
-      Song Analysis, Compare, and Genre all read from the same Exportify
+      Song Analysis, Genre, and Compare all read from the same Exportify
       playlist: upload it once on any of those three pages and the other two
       pick it up automatically. Compare additionally asks for one more file,
       a second playlist to measure against it. Streaming Trends runs on a
@@ -41,18 +41,6 @@
         <p class="overview-needs">Needs: Exportify playlist CSV</p>
         <span class="overview-cta">Open Song Analysis &rarr;</span>
       </a>
-      <a class="overview-card" href="#/compare">
-        <svg class="preview" viewBox="0 0 120 120" aria-hidden="true">
-          <circle cx="47" cy="60" r="34" fill="#1aad4e" fill-opacity="0.2" stroke="#1aad4e" stroke-width="2"/>
-          <circle cx="73" cy="60" r="34" fill="#898781" fill-opacity="0.16" stroke="#898781" stroke-width="2"/>
-        </svg>
-        <h2>Compare</h2>
-        <p>See how a second playlist stacks up against your playlist: an
-          overlaid audio-feature radar, plus a quick side-by-side look at
-          track count, popularity, and top genre.</p>
-        <p class="overview-needs">Needs: Exportify playlist CSV (same file as Song Analysis) plus one more to compare</p>
-        <span class="overview-cta">Open Compare &rarr;</span>
-      </a>
       <a class="overview-card" href="#/genre">
         <svg class="preview" viewBox="0 0 120 120" aria-hidden="true">
           <g fill="#1aad4e">
@@ -68,6 +56,18 @@
           Click a genre to see its most popular songs.</p>
         <p class="overview-needs">Needs: Exportify playlist CSV (same file as Song Analysis)</p>
         <span class="overview-cta">Open Genre &rarr;</span>
+      </a>
+      <a class="overview-card" href="#/compare">
+        <svg class="preview" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="47" cy="60" r="34" fill="#1aad4e" fill-opacity="0.2" stroke="#1aad4e" stroke-width="2"/>
+          <circle cx="73" cy="60" r="34" fill="#898781" fill-opacity="0.16" stroke="#898781" stroke-width="2"/>
+        </svg>
+        <h2>Compare</h2>
+        <p>See how a second playlist stacks up against your playlist: an
+          overlaid audio-feature radar, plus a quick side-by-side look at
+          track count, popularity, and top genre.</p>
+        <p class="overview-needs">Needs: Exportify playlist CSV (same file as Song Analysis) plus one more to compare</p>
+        <span class="overview-cta">Open Compare &rarr;</span>
       </a>
       <a class="overview-card" href="#/trends">
         <svg class="preview" viewBox="0 0 120 120" aria-hidden="true">
@@ -160,78 +160,6 @@
   </div>
 </section>
 
-<!-- ─────────────────────────── Compare ───────────────────────────── -->
-<section id="view-compare" class="view" hidden>
-  <div class="gate" id="gate-compare" hidden>
-    <h1>Compare</h1>
-    <p class="lead">
-      See how a second playlist stacks up against your playlist's audio-feature
-      profile and genre mix. Uses the same
-      <a href="https://exportify.net" target="_blank" rel="noopener">Exportify</a>
-      file as Song Analysis and Genre &mdash; upload it on any of those three
-      pages and it carries over here automatically. You only need to upload
-      one more playlist: the one you want to compare against it.
-    </p>
-    <ol class="gate-steps">
-      <li>Go to <a href="https://exportify.net" target="_blank" rel="noopener">exportify.net</a>
-        and sign in with your Spotify account. Exportify will ask you to link your
-        account and agree to Spotify's terms.</li>
-      <li>Open a playlist and click <strong>Export</strong>. The CSV downloads
-        immediately, with every column &mdash; including audio features and genres &mdash;
-        included automatically. There are no export settings to configure.</li>
-      <li>Drop your playlist export into the first slot below (skip this if you've
-        already uploaded it on Song Analysis or Genre), then repeat the export for
-        the playlist you want to compare and drop it into the second slot.</li>
-    </ol>
-    <div class="compare-upload-grid">
-      <div class="compare-upload-slot" id="compare-slot-playlist">
-        <h2>Your playlist</h2>
-        <div class="dropzone" data-kind="exportify" tabindex="0">
-          <strong>Drop Exportify CSV file(s) here</strong>
-          <span>or click to browse</span>
-          <input type="file" accept=".csv,text/csv" multiple hidden>
-        </div>
-        <p class="data-status" hidden></p>
-        <p class="gate-error" hidden></p>
-      </div>
-      <div class="compare-upload-slot" id="compare-slot-comparison">
-        <h2>Comparison playlist</h2>
-        <div class="dropzone" data-kind="compare-comparison" tabindex="0">
-          <strong>Drop the playlist to compare here</strong>
-          <span>or click to browse</span>
-          <input type="file" accept=".csv,text/csv" multiple hidden>
-        </div>
-        <p class="data-status" hidden></p>
-        <p class="gate-error" hidden></p>
-      </div>
-    </div>
-  </div>
-
-  <div class="loaded" hidden>
-    <div class="view-head">
-      <h1>Compare</h1>
-      <p class="page-desc">See how a comparison playlist's audio features and genre mix stack up against your playlist.</p>
-      <p class="data-status"></p>
-    </div>
-    <div class="card">
-      <h2>Track and genre stats</h2>
-      <div id="compare-stats"></div>
-    </div>
-    <div class="card">
-      <h2>Audio-feature profile</h2>
-      <div class="chart" id="compare-radar"></div>
-      <div class="table-slot" id="compare-radar-table"></div>
-    </div>
-    <div class="chip-row" id="compare-feature-chips"></div>
-    <div class="card">
-      <h2 id="compare-feature-heading">Compare a specific feature</h2>
-      <p class="feature-desc" id="compare-feature-desc"></p>
-      <div class="chart" id="compare-feature-chart"></div>
-      <div class="table-slot" id="compare-feature-table"></div>
-    </div>
-  </div>
-</section>
-
 <!-- ─────────────────────────── Genre ─────────────────────────────── -->
 <section id="view-genre" class="view" hidden>
   <div class="gate" id="gate-exportify-genre" hidden>
@@ -274,6 +202,78 @@
       <div class="card" id="genre-drill">
         <!-- filled by genre view -->
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── Compare ───────────────────────────── -->
+<section id="view-compare" class="view" hidden>
+  <div class="gate" id="gate-compare" hidden>
+    <h1>Compare</h1>
+    <p class="lead">
+      See how a second playlist stacks up against your playlist's audio-feature
+      profile and genre mix. Uses the same
+      <a href="https://exportify.net" target="_blank" rel="noopener">Exportify</a>
+      file as Song Analysis and Genre &mdash; upload it on any of those three
+      pages and it carries over here automatically. You only need to upload
+      one more playlist: the one you want to compare against it.
+    </p>
+    <ol class="gate-steps">
+      <li>Go to <a href="https://exportify.net" target="_blank" rel="noopener">exportify.net</a>
+        and sign in with your Spotify account. Exportify will ask you to link your
+        account and agree to Spotify's terms.</li>
+      <li>Open a playlist and click <strong>Export</strong>. The CSV downloads
+        immediately, with every column &mdash; including audio features and genres &mdash;
+        included automatically. There are no export settings to configure.</li>
+      <li>Drop your playlist export into the first slot below (skip this if you've
+        already uploaded it on Song Analysis or Genre), then repeat the export for
+        the playlist you want to compare and drop it into the second slot.</li>
+    </ol>
+    <div class="compare-upload-grid">
+      <div class="compare-upload-slot" id="compare-slot-playlist">
+        <h2>Your playlist</h2>
+        <div class="dropzone" data-kind="exportify" tabindex="0">
+          <strong>Drop Exportify CSV file(s) here</strong>
+          <span>or click to browse</span>
+          <input type="file" accept=".csv,text/csv" multiple hidden>
+        </div>
+        <p class="data-status" hidden></p>
+        <p class="gate-error" hidden></p>
+      </div>
+      <div class="compare-upload-slot" id="compare-slot-comparison">
+        <h2>Comparison playlist</h2>
+        <div class="dropzone" data-kind="compare-comparison" tabindex="0">
+          <strong>Drop Exportify CSV file(s) here</strong>
+          <span>or click to browse</span>
+          <input type="file" accept=".csv,text/csv" multiple hidden>
+        </div>
+        <p class="data-status" hidden></p>
+        <p class="gate-error" hidden></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="loaded" hidden>
+    <div class="view-head">
+      <h1>Compare</h1>
+      <p class="page-desc">See how a comparison playlist's audio features and genre mix stack up against your playlist.</p>
+      <p class="data-status"></p>
+    </div>
+    <div class="card">
+      <h2>Track and genre stats</h2>
+      <div id="compare-stats"></div>
+    </div>
+    <div class="card">
+      <h2>Audio-feature profile</h2>
+      <div class="chart" id="compare-radar"></div>
+      <div class="table-slot" id="compare-radar-table"></div>
+    </div>
+    <div class="chip-row" id="compare-feature-chips"></div>
+    <div class="card">
+      <h2 id="compare-feature-heading">Compare a specific feature</h2>
+      <p class="feature-desc" id="compare-feature-desc"></p>
+      <div class="chart" id="compare-feature-chart"></div>
+      <div class="table-slot" id="compare-feature-table"></div>
     </div>
   </div>
 </section>

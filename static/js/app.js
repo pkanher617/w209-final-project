@@ -4,21 +4,21 @@
 
 import { onStoreChange, loadExportifyFiles, loadStreamingFiles } from "./data.js";
 import { renderSongs } from "./views/songs.js";
-import { renderCompare, loadComparisonPlaylist } from "./views/compare.js";
 import { renderGenre } from "./views/genre.js";
+import { renderCompare, loadComparisonPlaylist } from "./views/compare.js";
 import { renderTrends } from "./views/trends.js";
 
 const ROUTES = {
   overview: () => {}, // static markup, nothing to render
   songs: renderSongs,
-  compare: renderCompare,
   genre: renderGenre,
+  compare: renderCompare,
   trends: renderTrends,
   about: () => {}, // static markup, nothing to render
 };
 
 function currentRoute() {
-  const m = location.hash.match(/^#\/(overview|songs|compare|genre|trends|about)\b/);
+  const m = location.hash.match(/^#\/(overview|songs|genre|compare|trends|about)\b/);
   return m ? m[1] : null;
 }
 
