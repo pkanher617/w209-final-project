@@ -1,28 +1,21 @@
 /* Compare view: overlays a second "comparison" playlist against the same
    main playlist (store.tracks) used by Song Analysis and Genre — uploading
    on any of those three pages fills the same shared playlist, so Compare only
-   ever needs ONE new upload of its own. The comparison playlist is kept in
-   this module's own local state, never merged into the shared store. */
+   ever needs ONE new upload of its own. The comparison playlist itself is
+   also kept in the shared store (store.comparison), not module-local state,
+   so it stays in sync with Home's embedded Compare section too. */
 
 /* global d3 */
 
-import {
-  store, FEATURES, featureValue, featureFormat, parseExportifyFiles, computeTrackStats,
-} from "../data.js";
+import { store, FEATURES, featureValue, featureFormat } from "../data.js";
 import {
   radarChart, comparisonHistogramChart, comparisonColumnChart, renderDataTable,
 } from "../charts.js";
+import { topGenre, formatTopGenre } from "../lib/rollups.js";
 
 const state = {
-  comparison: null, // { tracks, stats, names } | null
   feature: FEATURES[0].key, // selected feature for the per-feature comparison chart
 };
-
-export async function loadComparisonPlaylist(files) {
-  const { tracks, names } = await parseExportifyFiles(files);
-  state.comparison = { tracks, stats: computeTrackStats(tracks), names };
-  renderCompare();
-}
 
 function clearPlaylist() {
   store.tracks = null;
@@ -32,7 +25,9 @@ function clearPlaylist() {
 }
 
 function clearComparison() {
-  state.comparison = null;
+  store.comparison = null;
+  store.comparisonStats = null;
+  store.comparisonFiles = [];
   renderCompare();
 }
 
@@ -44,7 +39,7 @@ export function renderCompare() {
   renderPlaylistSlot();
   renderComparisonSlot();
 
-  const ready = store.tracks && state.comparison;
+  const ready = store.tracks && store.comparison;
   gate.hidden = ready;
   loaded.hidden = !ready;
   if (!ready) return;
@@ -80,11 +75,10 @@ function renderPlaylistSlot() {
 
 function renderComparisonSlot() {
   const slot = document.getElementById("compare-slot-comparison");
-  const info = state.comparison;
   const dropzone = slot.querySelector(".dropzone");
   const summary = slot.querySelector(".data-status");
 
-  if (!info) {
+  if (!store.comparison) {
     dropzone.hidden = false;
     summary.hidden = true;
     return;
@@ -93,7 +87,7 @@ function renderComparisonSlot() {
   summary.hidden = false;
   summary.replaceChildren();
   summary.appendChild(document.createTextNode(
-    `${d3.format(",")(info.tracks.length)} tracks from ${info.names.join(", ")} · `));
+    `${d3.format(",")(store.comparison.length)} tracks from ${store.comparisonFiles.join(", ")} · `));
   const btn = document.createElement("button");
   btn.type = "button";
   btn.textContent = "replace file";
@@ -116,7 +110,7 @@ function renderStatus(loaded) {
   el.appendChild(document.createTextNode(" · "));
 
   el.appendChild(document.createTextNode(
-    `Comparison playlist: ${d3.format(",")(state.comparison.tracks.length)} tracks from ${state.comparison.names.join(", ")} `));
+    `Comparison playlist: ${d3.format(",")(store.comparison.length)} tracks from ${store.comparisonFiles.join(", ")} `));
   const btnCmp = document.createElement("button");
   btnCmp.type = "button";
   btnCmp.textContent = "replace file";
@@ -133,31 +127,16 @@ function chartLabel(base, names) {
   return `${base} (${suffix})`;
 }
 
-function topGenre(tracks) {
-  const counts = new Map();
-  for (const t of tracks) {
-    for (const g of t.genreList) counts.set(g, (counts.get(g) ?? 0) + 1);
-  }
-  if (!counts.size) return null;
-  return [...counts.entries()].sort((x, y) => y[1] - x[1])[0]; // [name, count]
-}
-
-function formatTopGenre(entry, total) {
-  if (!entry) return "—";
-  const [name, count] = entry;
-  return `${name} (${d3.format(".0%")(count / total)})`;
-}
-
 function renderStats() {
   const el = document.getElementById("compare-stats");
   el.replaceChildren();
 
   const libTracks = store.tracks;
   const libStats = store.trackStats;
-  const cmpTracks = state.comparison.tracks;
-  const cmpStats = state.comparison.stats;
+  const cmpTracks = store.comparison;
+  const cmpStats = store.comparisonStats;
   const labelA = chartLabel("Playlist", store.exportifyFiles);
-  const labelB = chartLabel("Comparison", state.comparison.names);
+  const labelB = chartLabel("Comparison", store.comparisonFiles);
 
   const rows = [
     ["Tracks", d3.format(",")(libTracks.length), d3.format(",")(cmpTracks.length)],
@@ -201,9 +180,9 @@ function renderStats() {
 function renderRadar() {
   const chartEl = document.getElementById("compare-radar");
   const libStats = store.trackStats;
-  const cmpStats = state.comparison.stats;
+  const cmpStats = store.comparisonStats;
   const labelA = chartLabel("Playlist", store.exportifyFiles);
-  const labelB = chartLabel("Comparison", state.comparison.names);
+  const labelB = chartLabel("Comparison", store.comparisonFiles);
 
   const axes = FEATURES.map((f) => ({
     label: f.label,
@@ -264,11 +243,11 @@ function renderFeatureComparison() {
   desc.textContent = f.desc;
 
   const labelA = chartLabel("Playlist", store.exportifyFiles);
-  const labelB = chartLabel("Comparison", state.comparison.names);
+  const labelB = chartLabel("Comparison", store.comparisonFiles);
 
   if (f.discrete && f.categories) {
     const rawA = store.tracks.map((t) => featureValue(t, f)).filter((v) => v != null && !Number.isNaN(v));
-    const rawB = state.comparison.tracks.map((t) => featureValue(t, f)).filter((v) => v != null && !Number.isNaN(v));
+    const rawB = store.comparison.map((t) => featureValue(t, f)).filter((v) => v != null && !Number.isNaN(v));
     const countsA = d3.rollup(rawA, (v) => v.length, (v) => Math.round(v));
     const countsB = d3.rollup(rawB, (v) => v.length, (v) => Math.round(v));
     const categories = f.categories.map((c) => c.label);
@@ -282,7 +261,7 @@ function renderFeatureComparison() {
       `Data table — ${f.label.toLowerCase()} comparison`);
   } else {
     const valuesA = store.tracks.map((t) => featureValue(t, f)).filter((v) => v != null && !Number.isNaN(v));
-    const valuesB = state.comparison.tracks.map((t) => featureValue(t, f)).filter((v) => v != null && !Number.isNaN(v));
+    const valuesB = store.comparison.map((t) => featureValue(t, f)).filter((v) => v != null && !Number.isNaN(v));
     const xFmt = histFormatter(f);
 
     const combined = comparisonHistogramChart(chartEl, valuesA, valuesB, {

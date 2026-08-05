@@ -5,6 +5,7 @@
 
 import { store, FEATURES, featureValue, featureNorm, featureFormat } from "../data.js";
 import { histogramChart, columnChart, radarChart, renderDataTable } from "../charts.js";
+import { topSongs } from "../lib/rollups.js";
 
 const state = {
   mode: "song",   // "song" | "feature"
@@ -29,7 +30,7 @@ export function renderSongs() {
   loaded.hidden = false;
 
   if (!state.song || !store.tracks.includes(state.song)) {
-    state.song = topSongs()[0] ?? store.tracks[0];
+    state.song = topSongs(store.tracks)[0] ?? store.tracks[0];
     state.mode = "song";
   }
 
@@ -38,13 +39,6 @@ export function renderSongs() {
   renderTopList();
   renderSearch();
   renderCenter();
-}
-
-function topSongs() {
-  return [...store.tracks]
-    .filter((t) => t.popularity != null)
-    .sort((a, b) => b.popularity - a.popularity)
-    .slice(0, 10);
 }
 
 function renderStatus(loaded) {
@@ -135,7 +129,7 @@ function songButton(track, { rank = null, valueText = null } = {}) {
 function renderTopList() {
   const ol = document.getElementById("top-songs-list");
   ol.replaceChildren();
-  topSongs().forEach((t, i) => {
+  topSongs(store.tracks).forEach((t, i) => {
     ol.appendChild(songButton(t, { rank: i + 1, valueText: String(t.popularity) }));
   });
 }

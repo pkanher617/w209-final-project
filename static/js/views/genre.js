@@ -5,6 +5,7 @@
 
 import { store } from "../data.js";
 import { bubbleChart, barList, renderDataTable } from "../charts.js";
+import { genreRollup } from "../lib/rollups.js";
 
 const MAX_BUBBLES = 40;
 
@@ -24,7 +25,7 @@ export function renderGenre() {
   gate.hidden = true;
   loaded.hidden = false;
 
-  const { genres, untagged } = genreRollup();
+  const { genres, untagged } = genreRollup(store.tracks);
   if (state.selected && !genres.some((g) => g.name === state.selected)) {
     state.selected = null;
   }
@@ -72,30 +73,6 @@ function renderStatus(loaded, genres, untagged) {
     renderGenre();
   });
   el.appendChild(btn);
-}
-
-function genreRollup() {
-  const byGenre = new Map();
-  let untagged = 0;
-  for (const t of store.tracks) {
-    if (!t.genreList.length) { untagged += 1; continue; }
-    for (const g of t.genreList) {
-      let entry = byGenre.get(g);
-      if (!entry) {
-        entry = { name: g, count: 0, tracks: [] };
-        byGenre.set(g, entry);
-      }
-      entry.count += 1;
-      entry.tracks.push(t);
-    }
-  }
-  const genres = [...byGenre.values()]
-    .map((g) => ({
-      ...g,
-      meanPop: d3.mean(g.tracks, (t) => t.popularity) ?? 0,
-    }))
-    .sort((a, b) => b.count - a.count);
-  return { genres, untagged };
 }
 
 function renderDrill(genres) {

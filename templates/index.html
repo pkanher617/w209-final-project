@@ -2,109 +2,193 @@
 
 {% block content %}
 
-<!-- ─────────────────────────── Overview ──────────────────────────── -->
-<section id="view-overview" class="view" hidden>
-  <div class="overview">
+<!-- ─────────────────────────────── Home ────────────────────────────── -->
+<section id="view-home" class="view" hidden>
+  <div class="home-intro">
     <h1>Understand your Spotify taste</h1>
     <p class="lead">
-      Upload the files Spotify already lets you download, and explore your music
-      from three angles: song details, genre mix, and listening habits over time.
-      Everything below is parsed right here in your browser; nothing you
-      upload is ever sent to a server.
+      Upload the files Spotify already lets you download, and scroll through your
+      music from four angles: song details, genre mix, how a second playlist
+      compares, and your listening habits over time. Everything is parsed right
+      here in your browser; nothing you upload is ever sent to a server.
     </p>
-    <p class="lead">
-      Song Analysis, Genre, and Compare all read from the same Exportify
-      playlist: upload it once on any of those three pages and the other two
-      pick it up automatically. Compare additionally asks for one more file,
-      a second playlist to measure against it. Streaming Trends runs on a
-      separate file, your Extended Streaming History, since it tracks your
-      actual listening habits rather than a single playlist's makeup.
-    </p>
-    <div class="overview-grid">
-      <a class="overview-card" href="#/songs">
-        <svg class="preview" viewBox="0 0 120 120" aria-hidden="true">
-          <g stroke="#2c2c2a" stroke-width="1" fill="none">
-            <line x1="60" y1="60" x2="60" y2="18"/>
-            <line x1="60" y1="60" x2="96.4" y2="39"/>
-            <line x1="60" y1="60" x2="96.4" y2="81"/>
-            <line x1="60" y1="60" x2="60" y2="102"/>
-            <line x1="60" y1="60" x2="23.6" y2="81"/>
-            <line x1="60" y1="60" x2="23.6" y2="39"/>
-            <polygon points="60,18 96.4,39 96.4,81 60,102 23.6,81 23.6,39"/>
-          </g>
-          <polygon points="60,37 93,41 85,75 60,77 29,78 38,48"
-            fill="#1aad4e" fill-opacity="0.18" stroke="#1aad4e" stroke-width="2" stroke-linejoin="round"/>
-        </svg>
-        <h2>Song Analysis</h2>
-        <p>Your top 10 songs, a searchable track list, and a 15-point audio-feature
-          radar for any song against your playlist's average.</p>
-        <p class="overview-needs">Needs: Exportify playlist CSV</p>
-        <span class="overview-cta">Open Song Analysis &rarr;</span>
-      </a>
-      <a class="overview-card" href="#/genre">
-        <svg class="preview" viewBox="0 0 120 120" aria-hidden="true">
-          <g fill="#1aad4e">
-            <circle cx="45" cy="62" r="30" fill-opacity="0.22" stroke="#1aad4e" stroke-width="1.5"/>
-            <circle cx="88" cy="38" r="19" fill-opacity="0.3" stroke="#1aad4e" stroke-width="1.5"/>
-            <circle cx="97" cy="86" r="13" fill-opacity="0.16" stroke="#1aad4e" stroke-width="1.5"/>
-            <circle cx="58" cy="98" r="10" fill-opacity="0.16" stroke="#1aad4e" stroke-width="1.5"/>
-            <circle cx="20" cy="24" r="8" fill-opacity="0.16" stroke="#1aad4e" stroke-width="1.5"/>
-          </g>
-        </svg>
-        <h2>Genre</h2>
-        <p>A bubble chart of every genre in your playlist, sized by song count.
-          Click a genre to see its most popular songs.</p>
-        <p class="overview-needs">Needs: Exportify playlist CSV (same file as Song Analysis)</p>
-        <span class="overview-cta">Open Genre &rarr;</span>
-      </a>
-      <a class="overview-card" href="#/compare">
-        <svg class="preview" viewBox="0 0 120 120" aria-hidden="true">
-          <circle cx="47" cy="60" r="34" fill="#1aad4e" fill-opacity="0.2" stroke="#1aad4e" stroke-width="2"/>
-          <circle cx="73" cy="60" r="34" fill="#898781" fill-opacity="0.16" stroke="#898781" stroke-width="2"/>
-        </svg>
-        <h2>Compare</h2>
-        <p>See how a second playlist stacks up against your playlist: an
-          overlaid audio-feature radar, plus a quick side-by-side look at
-          track count, popularity, and top genre.</p>
-        <p class="overview-needs">Needs: Exportify playlist CSV (same file as Song Analysis) plus one more to compare</p>
-        <span class="overview-cta">Open Compare &rarr;</span>
-      </a>
-      <a class="overview-card" href="#/trends">
-        <svg class="preview" viewBox="0 0 120 120" aria-hidden="true">
-          <g>
-            <rect x="8" y="30" width="15" height="13" rx="2" fill="#0e4429"/>
-            <rect x="27" y="30" width="15" height="13" rx="2" fill="#12291c"/>
-            <rect x="46" y="30" width="15" height="13" rx="2" fill="#12291c"/>
-            <rect x="65" y="30" width="15" height="13" rx="2" fill="#00602d"/>
-            <rect x="84" y="30" width="15" height="13" rx="2" fill="#0e4429"/>
-            <rect x="103" y="30" width="15" height="13" rx="2" fill="#12291c"/>
-            <rect x="8" y="47" width="15" height="13" rx="2" fill="#00602d"/>
-            <rect x="27" y="47" width="15" height="13" rx="2" fill="#149244"/>
-            <rect x="46" y="47" width="15" height="13" rx="2" fill="#25c05b"/>
-            <rect x="65" y="47" width="15" height="13" rx="2" fill="#149244"/>
-            <rect x="84" y="47" width="15" height="13" rx="2" fill="#00602d"/>
-            <rect x="103" y="47" width="15" height="13" rx="2" fill="#0e4429"/>
-            <rect x="8" y="64" width="15" height="13" rx="2" fill="#0e4429"/>
-            <rect x="27" y="64" width="15" height="13" rx="2" fill="#00602d"/>
-            <rect x="46" y="64" width="15" height="13" rx="2" fill="#3be477"/>
-            <rect x="65" y="64" width="15" height="13" rx="2" fill="#25c05b"/>
-            <rect x="84" y="64" width="15" height="13" rx="2" fill="#00602d"/>
-            <rect x="103" y="64" width="15" height="13" rx="2" fill="#0e4429"/>
-            <rect x="8" y="81" width="15" height="13" rx="2" fill="#12291c"/>
-            <rect x="27" y="81" width="15" height="13" rx="2" fill="#0e4429"/>
-            <rect x="46" y="81" width="15" height="13" rx="2" fill="#00602d"/>
-            <rect x="65" y="81" width="15" height="13" rx="2" fill="#0e4429"/>
-            <rect x="84" y="81" width="15" height="13" rx="2" fill="#12291c"/>
-            <rect x="103" y="81" width="15" height="13" rx="2" fill="#12291c"/>
-          </g>
-        </svg>
-        <h2>Streaming Trends</h2>
-        <p>Hours streamed by year and month, a day-of-week &times; time-of-day
-          heatmap of when you actually listen, and your top artists and songs.</p>
-        <p class="overview-needs">Needs: Spotify Extended Streaming History</p>
-        <span class="overview-cta">Open Streaming Trends &rarr;</span>
-      </a>
+  </div>
+
+  <nav class="home-progress" id="home-progress" aria-label="Section progress">
+    <div class="home-progress-track">
+      <button type="button" class="home-progress-step" data-step="playlist">Playlist</button>
+      <button type="button" class="home-progress-step" data-step="songs">Song Analysis</button>
+      <button type="button" class="home-progress-step" data-step="genre">Genre</button>
+      <button type="button" class="home-progress-step" data-step="compare">Compare</button>
+      <button type="button" class="home-progress-step" data-step="trends">Streaming</button>
     </div>
+  </nav>
+
+  <div class="step" data-step="playlist">
+    <div class="gate" id="home-gate-exportify">
+      <h1>Upload your playlist</h1>
+      <p class="lead">
+        Everything below unlocks once you upload a playlist export from
+        <a href="https://exportify.net" target="_blank" rel="noopener">Exportify</a>
+        &mdash; the same file Song Analysis, Genre, and Compare use.
+      </p>
+      <ol class="gate-steps">
+        <li>Go to <a href="https://exportify.net" target="_blank" rel="noopener">exportify.net</a>
+          and sign in with your Spotify account. Exportify will ask you to link your
+          account and agree to Spotify's terms.</li>
+        <li>Open one of your playlists and click <strong>Export</strong>. The CSV downloads
+          immediately, with every column &mdash; including audio features and genres &mdash;
+          included automatically. There are no export settings to configure.</li>
+        <li>Drop the CSV below, or click to browse. You can select more than one playlist at once.</li>
+      </ol>
+      <div class="dropzone" data-kind="exportify" tabindex="0">
+        <strong>Drop Exportify CSV file(s) here</strong>
+        <span>or click to browse</span>
+        <input type="file" accept=".csv,text/csv" multiple hidden>
+      </div>
+      <p class="gate-error" hidden></p>
+    </div>
+  </div>
+
+  <div id="home-after-playlist" hidden>
+
+    <div class="step" data-step="songs">
+      <div class="view-head">
+        <h1>Song Analysis</h1>
+        <p class="page-desc">Browse your top songs, search any track, and see its full audio-feature profile against your playlist average.</p>
+        <p class="data-status" id="home-songs-status"></p>
+      </div>
+      <div class="chip-row" id="home-feature-chips"></div>
+      <div class="songs-grid">
+        <aside class="card">
+          <h2>Top 10 by Spotify popularity</h2>
+          <ol class="song-list" id="home-top-songs-list"></ol>
+        </aside>
+        <div class="card" id="home-song-center"></div>
+        <aside class="card">
+          <h2>Search songs</h2>
+          <input type="search" id="home-song-search" class="search-input" placeholder="Title or artist&hellip;" autocomplete="off">
+          <ul class="song-list" id="home-search-results"></ul>
+        </aside>
+      </div>
+    </div>
+
+    <div class="step" data-step="genre">
+      <div class="view-head">
+        <h1>Genre</h1>
+        <p class="page-desc">See which genres make up your playlist, and drill into any genre's most popular songs.</p>
+        <p class="data-status" id="home-genre-status"></p>
+      </div>
+      <div class="genre-grid">
+        <div class="card">
+          <h2>Playlist makeup by genre. Click a bubble to drill down</h2>
+          <div class="chart" id="home-genre-bubbles"></div>
+          <div class="table-slot" id="home-genre-table"></div>
+        </div>
+        <div class="card" id="home-genre-drill"></div>
+      </div>
+    </div>
+
+    <div class="step" data-step="compare">
+      <div class="view-head">
+        <h1>Compare</h1>
+        <p class="page-desc">Optional &mdash; see how a second playlist's audio features and genre mix stack up against yours. Skip this and keep scrolling if you'd rather not.</p>
+      </div>
+      <div class="card compare-upload-slot" id="home-compare-slot">
+        <div class="dropzone" data-kind="compare-comparison" tabindex="0">
+          <strong>Drop a second Exportify CSV to compare</strong>
+          <span>or click to browse</span>
+          <input type="file" accept=".csv,text/csv" multiple hidden>
+        </div>
+        <p class="data-status" hidden></p>
+        <p class="gate-error" hidden></p>
+      </div>
+      <div id="home-compare-content" hidden>
+        <div class="card">
+          <h2>Track and genre stats</h2>
+          <div id="home-compare-stats"></div>
+        </div>
+        <div class="card">
+          <h2>Audio-feature profile</h2>
+          <div class="chart" id="home-compare-radar"></div>
+          <div class="table-slot" id="home-compare-radar-table"></div>
+        </div>
+        <div class="chip-row" id="home-compare-feature-chips"></div>
+        <div class="card">
+          <h2 id="home-compare-feature-heading">Compare a specific feature</h2>
+          <p class="feature-desc" id="home-compare-feature-desc"></p>
+          <div class="chart" id="home-compare-feature-chart"></div>
+          <div class="table-slot" id="home-compare-feature-table"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" data-step="trends">
+      <div class="gate" id="home-gate-streaming">
+        <h1>Upload your streaming history</h1>
+        <p class="lead">
+          See when you actually listen: hours streamed by year and month, a
+          day-of-week &times; time-of-day heatmap, and your top artists and songs.
+          This needs a separate file from Exportify: Spotify's
+          <strong>Extended Streaming History</strong>, which takes longer to arrive.
+        </p>
+        <ol class="gate-steps">
+          <li>Go to Spotify's <a href="https://www.spotify.com/account/privacy/" target="_blank" rel="noopener">privacy page</a>
+            and sign in to your account.</li>
+          <li>Scroll to <strong>Download your data</strong> and tick the box for
+            <strong>Extended streaming history</strong> specifically. It's a separate
+            option from the basic account data, so make sure that one is checked before
+            you submit the request. Click the <strong>Request Data</strong> button.</li>
+          <li>Wait for Spotify's email. Unlike Exportify, this isn't instant: it usually
+            takes a few days, and can take up to about a month.</li>
+          <li>When the email arrives, download and unzip <code>my_spotify_data.zip</code>.</li>
+          <li>Drop every <code>Streaming_History_Audio_*.json</code> file below at once
+            (video history files are welcome too).</li>
+        </ol>
+        <div class="dropzone" data-kind="streaming" tabindex="0">
+          <strong>Drop Streaming_History_*.json files here</strong>
+          <span>or click to browse</span>
+          <input type="file" accept=".json,application/json" multiple hidden>
+        </div>
+        <p class="gate-error" hidden></p>
+      </div>
+
+      <div class="loaded" id="home-trends-loaded" hidden>
+        <div class="view-head">
+          <h1>Streaming Trends</h1>
+          <p class="page-desc">See when you listen: hours by year and month, your daily rhythm, and your top artists and songs.</p>
+          <p class="data-status" id="home-trends-status"></p>
+        </div>
+        <div class="tiles" id="home-trend-tiles"></div>
+        <div class="card">
+          <h2>Hours streamed by year</h2>
+          <div class="chart" id="home-trend-year"></div>
+          <div class="table-slot"></div>
+        </div>
+        <div class="card">
+          <h2>Hours streamed by month</h2>
+          <div class="chart" id="home-trend-month"></div>
+          <div class="table-slot"></div>
+        </div>
+        <div class="card">
+          <h2>Hours streamed by time of day</h2>
+          <p class="note">Day of week &times; hour of day, in your local timezone.</p>
+          <div class="chart" id="home-trend-heatmap"></div>
+          <div class="table-slot"></div>
+        </div>
+        <div class="trend-pair">
+          <div class="card">
+            <h2>Top 10 artists by hours</h2>
+            <div class="chart" id="home-trend-artists"></div>
+          </div>
+          <div class="card">
+            <h2>Top 10 songs by plays</h2>
+            <div class="chart" id="home-trend-tracks"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -153,7 +237,7 @@
       </div>
       <aside class="card" id="song-search-card">
         <h2>Search songs</h2>
-        <input type="search" id="song-search" placeholder="Title or artist&hellip;" autocomplete="off">
+        <input type="search" id="song-search" class="search-input" placeholder="Title or artist&hellip;" autocomplete="off">
         <ul class="song-list" id="search-results"></ul>
       </aside>
     </div>
@@ -410,5 +494,6 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://unpkg.com/scrollama"></script>
 <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% endblock %}

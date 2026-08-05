@@ -2,14 +2,15 @@
    Views are hash routes inside one page so uploaded data survives navigation
    (the browser keeps it in memory; nothing is sent to a server). */
 
-import { onStoreChange, loadExportifyFiles, loadStreamingFiles } from "./data.js";
+import { onStoreChange, loadExportifyFiles, loadStreamingFiles, loadComparisonPlaylist } from "./data.js";
+import { renderHome } from "./views/home.js";
 import { renderSongs } from "./views/songs.js";
 import { renderGenre } from "./views/genre.js";
-import { renderCompare, loadComparisonPlaylist } from "./views/compare.js";
+import { renderCompare } from "./views/compare.js";
 import { renderTrends } from "./views/trends.js";
 
 const ROUTES = {
-  overview: () => {}, // static markup, nothing to render
+  home: renderHome,
   songs: renderSongs,
   genre: renderGenre,
   compare: renderCompare,
@@ -18,14 +19,14 @@ const ROUTES = {
 };
 
 function currentRoute() {
-  const m = location.hash.match(/^#\/(overview|songs|genre|compare|trends|about)\b/);
+  const m = location.hash.match(/^#\/(home|songs|genre|compare|trends|about)\b/);
   return m ? m[1] : null;
 }
 
 function navigate() {
   const route = currentRoute();
   if (!route) {
-    location.replace("#/overview"); // hashchange re-enters navigate()
+    location.replace("#/home"); // hashchange re-enters navigate()
     return;
   }
   for (const name of Object.keys(ROUTES)) {

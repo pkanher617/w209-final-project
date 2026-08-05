@@ -11,6 +11,9 @@ export const store = {
   exportifyFiles: [],  // file names, for the status line
   plays: null,         // normalized streaming-history rows
   streamingFiles: [],
+  comparison: null,       // Compare's second playlist — mirrors tracks/trackStats/exportifyFiles
+  comparisonStats: null,  // so it stays in sync everywhere it's shown (Home + the standalone tab)
+  comparisonFiles: [],
 };
 
 const listeners = new Set();
@@ -240,6 +243,17 @@ export async function loadExportifyFiles(files) {
   store.tracks = tracks;
   store.trackStats = computeTrackStats(tracks);
   store.exportifyFiles = names;
+  emit();
+}
+
+// Compare's second playlist — kept in the shared store (not a module-local
+// state) so it stays in sync between Home and the standalone Compare tab,
+// the same "upload once, available everywhere" behavior store.tracks has.
+export async function loadComparisonPlaylist(files) {
+  const { tracks, names } = await parseExportifyFiles(files);
+  store.comparison = tracks;
+  store.comparisonStats = computeTrackStats(tracks);
+  store.comparisonFiles = names;
   emit();
 }
 

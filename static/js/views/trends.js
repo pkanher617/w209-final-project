@@ -6,9 +6,7 @@
 
 import { store } from "../data.js";
 import { columnChart, lineAreaChart, heatmapChart, barList, renderDataTable } from "../charts.js";
-
-const MS_PER_HOUR = 3.6e6;
-const PLAY_THRESHOLD_MS = 30000; // Spotify counts a stream at 30s
+import { aggregate, MS_PER_HOUR } from "../lib/rollups.js";
 
 let cache = null; // aggregates, recomputed when the plays array changes
 
@@ -32,51 +30,6 @@ export function renderTrends() {
   renderMonth();
   renderHeatmap();
   renderTopLists();
-}
-
-function aggregate(plays) {
-  const hoursByYear = d3.rollup(plays, (v) => d3.sum(v, (p) => p.ms) / MS_PER_HOUR,
-    (p) => p.ts.getFullYear());
-
-  const hoursByMonth = d3.rollup(plays, (v) => d3.sum(v, (p) => p.ms) / MS_PER_HOUR,
-    (p) => new Date(p.ts.getFullYear(), p.ts.getMonth(), 1).getTime());
-
-  const heat = d3.rollup(plays, (v) => d3.sum(v, (p) => p.ms) / MS_PER_HOUR,
-    (p) => p.ts.getDay(), (p) => p.ts.getHours());
-  const cells = [];
-  for (let day = 0; day < 7; day++) {
-    for (let hour = 0; hour < 24; hour++) {
-      cells.push({ day, hour, value: heat.get(day)?.get(hour) ?? 0 });
-    }
-  }
-
-  const music = plays.filter((p) => p.isMusic && p.track);
-  const artistHours = d3.rollups(
-    music.filter((p) => p.artist),
-    (v) => d3.sum(v, (p) => p.ms) / MS_PER_HOUR,
-    (p) => p.artist)
-    .sort((a, b) => b[1] - a[1]);
-  const trackPlays = d3.rollups(
-    music.filter((p) => p.ms >= PLAY_THRESHOLD_MS),
-    (v) => ({ plays: v.length, track: v[0].track, artist: v[0].artist }),
-    (p) => `${p.track}::${p.artist}`)
-    .sort((a, b) => b[1].plays - a[1].plays);
-
-  return {
-    source: plays,
-    totalHours: d3.sum(plays, (p) => p.ms) / MS_PER_HOUR,
-    totalPlays: music.filter((p) => p.ms >= PLAY_THRESHOLD_MS).length,
-    uniqueArtists: new Set(music.filter((p) => p.artist).map((p) => p.artist)).size,
-    uniqueTracks: new Set(music.map((p) => `${p.track}::${p.artist}`)).size,
-    first: plays[0].ts,
-    last: plays[plays.length - 1].ts,
-    hoursByYear: [...hoursByYear.entries()].sort((a, b) => a[0] - b[0]),
-    hoursByMonth: [...hoursByMonth.entries()].sort((a, b) => a[0] - b[0])
-      .map(([t, v]) => ({ date: new Date(+t), value: v })),
-    cells,
-    artistHours,
-    trackPlays,
-  };
 }
 
 function renderStatus(loaded) {

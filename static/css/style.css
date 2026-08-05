@@ -100,36 +100,52 @@ p.note { color: var(--muted); font-size: 0.82rem; margin: -0.4rem 0 0.75rem; }
   text-decoration: underline;
 }
 
-/* ── overview / landing ───────────────────────────────────────── */
-.overview { max-width: 66rem; margin: 1rem auto 0; }
-.overview .lead { max-width: 50rem; margin-bottom: 2rem; }
+/* ── home / landing ───────────────────────────────────────────── */
+.home-intro { max-width: 66rem; margin: 1rem auto 0; }
+.home-intro .lead { max-width: 50rem; margin-bottom: 1.5rem; }
 
-.overview-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.25rem;
-}
-
-.overview-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+/* Sticky wayfinding rail — cosmetic only, driven by scrollama's onStepEnter.
+   top is set at runtime (home.js) to the header's actual rendered height. */
+.home-progress {
+  position: sticky;
+  top: 3.5rem;
+  z-index: 5;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.4rem;
-  color: inherit;
-  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+  margin: 0 0 1.75rem;
+  border-radius: 8px;
 }
 
-.overview-card:hover { border-color: var(--accent); }
-.overview-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.home-progress-track {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  padding: 0.6rem 1rem;
+}
 
-.overview-card .preview { width: 100%; height: 96px; }
-.overview-card h2 { margin: 0; font-size: 1.05rem; color: var(--text-primary); }
-.overview-card p { margin: 0; color: var(--text-secondary); font-size: 0.88rem; }
-.overview-card .overview-needs { color: var(--muted); font-size: 0.78rem; }
-.overview-card .overview-cta { color: var(--accent); font-weight: 600; font-size: 0.85rem; margin-top: 0.2rem; }
+.home-progress-step {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  padding: 0.2rem 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.home-progress-step:hover { color: var(--text-primary); }
+
+.home-progress-step.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+/* Each major section of the combined scroll experience. */
+.step { margin: 0 0 3rem; }
+.step:last-child { margin-bottom: 0; }
 
 /* ── about ────────────────────────────────────────────────────── */
 .about { max-width: 46rem; margin: 1rem auto 0; }
@@ -376,7 +392,7 @@ p.note { color: var(--muted); font-size: 0.82rem; margin: -0.4rem 0 0.75rem; }
 
 .song-list .rank { color: var(--muted); min-width: 1.4em; }
 
-#song-search {
+.search-input {
   width: 100%;
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -388,7 +404,7 @@ p.note { color: var(--muted); font-size: 0.82rem; margin: -0.4rem 0 0.75rem; }
   margin-bottom: 0.6rem;
 }
 
-#song-search:focus { outline: none; border-color: var(--accent); }
+.search-input:focus { outline: none; border-color: var(--accent); }
 
 .empty-hint { color: var(--muted); font-size: 0.85rem; }
 
