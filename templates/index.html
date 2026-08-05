@@ -254,6 +254,67 @@
   </div>
 </section>
 
+<!-- ─────────────────────────── About ─────────────────────────────── -->
+<section id="view-about" class="view" hidden>
+  <div class="about">
+    <h1>About this project</h1>
+
+    <div class="about-block">
+      <h2>Team</h2>
+      <ul class="about-team">
+        <li>Prithvi Kanherkar</li>
+        <li>Sabrina Lam</li>
+      </ul>
+    </div>
+
+    <div class="about-block">
+      <h2>Goals</h2>
+      <p>
+        Spotify Wrapped gives every listener one polished snapshot a year. This
+        project lets you dig in any time, on your own terms: it breaks down a
+        playlist's audio-feature makeup (danceability, energy, tempo, and more)
+        and genre mix, and turns your Extended Streaming History into a picture
+        of your actual listening habits &mdash; which months and times of day
+        you listen most, and which artists and songs you keep coming back to.
+        The goal is simply to give Spotify listeners more insight into their
+        own listening trends than the Spotify app itself surfaces.
+      </p>
+    </div>
+
+    <div class="about-block">
+      <h2>Intended audience</h2>
+      <p>
+        The Spotify userbase at large &mdash; any listener curious about their
+        own habits, not just data analysts. No technical background is
+        required: each page walks you through downloading and uploading the
+        right file, and the charts take it from there.
+      </p>
+    </div>
+
+    <div class="about-block">
+      <h2>Data sources</h2>
+      <dl class="about-sources">
+        <dt>Exportify</dt>
+        <dd>
+          A third-party tool that pulls a playlist's track data, audio
+          features, and genres from the Spotify Web API and exports it as a
+          CSV. Powers Song Analysis and Genre.
+        </dd>
+        <dt>Spotify's data download tool</dt>
+        <dd>
+          Spotify's own account privacy page, where you can request your
+          Extended Streaming History &mdash; a full record of what you've
+          played and when. Powers Streaming Trends.
+        </dd>
+      </dl>
+      <p class="note">
+        Both files are processed entirely in your browser &mdash; nothing you
+        upload is ever sent to a server.
+      </p>
+    </div>
+  </div>
+</section>
+
 {% endblock %}
 
 {% block scripts %}

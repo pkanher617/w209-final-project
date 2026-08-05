@@ -12,10 +12,11 @@ const ROUTES = {
   songs: renderSongs,
   genre: renderGenre,
   trends: renderTrends,
+  about: () => {}, // static markup, nothing to render
 };
 
 function currentRoute() {
-  const m = location.hash.match(/^#\/(overview|songs|genre|trends)\b/);
+  const m = location.hash.match(/^#\/(overview|songs|genre|trends|about)\b/);
   return m ? m[1] : null;
 }
 

@@ -131,6 +131,40 @@ p.note { color: var(--muted); font-size: 0.82rem; margin: -0.4rem 0 0.75rem; }
 .overview-card .overview-needs { color: var(--muted); font-size: 0.78rem; }
 .overview-card .overview-cta { color: var(--accent); font-weight: 600; font-size: 0.85rem; margin-top: 0.2rem; }
 
+/* ── about ────────────────────────────────────────────────────── */
+.about { max-width: 46rem; margin: 1rem auto 0; }
+
+.about-block { margin: 2rem 0; }
+.about-block:first-of-type { margin-top: 1.5rem; }
+.about-block h2 { font-size: 1.05rem; margin-bottom: 0.6rem; }
+.about-block p { color: var(--text-secondary); margin: 0; }
+.about-block .note { margin-top: 1rem; }
+
+.about-team {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: var(--text-primary);
+  font-size: 0.98rem;
+}
+
+.about-team li { margin: 0 0 0.3rem; }
+
+.about-sources { margin: 0; }
+
+.about-sources dt {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.about-sources dt:not(:first-child) { margin-top: 1.1rem; }
+
+.about-sources dd {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
 /* ── upload gates ─────────────────────────────────────────────── */
 .gate { max-width: 46rem; margin: 2.5rem auto; }
 .gate .lead { margin-bottom: 1.1rem; }
