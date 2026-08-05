@@ -4,21 +4,21 @@
 
 import { onStoreChange, loadExportifyFiles, loadStreamingFiles } from "./data.js";
 import { renderSongs } from "./views/songs.js";
+import { renderCompare, loadComparisonPlaylist } from "./views/compare.js";
 import { renderGenre } from "./views/genre.js";
 import { renderTrends } from "./views/trends.js";
-import { renderCompare, loadPlaylistA, loadPlaylistB } from "./views/compare.js";
 
 const ROUTES = {
   overview: () => {}, // static markup, nothing to render
   songs: renderSongs,
-  genre: renderGenre,
   compare: renderCompare,
+  genre: renderGenre,
   trends: renderTrends,
   about: () => {}, // static markup, nothing to render
 };
 
 function currentRoute() {
-  const m = location.hash.match(/^#\/(overview|songs|genre|compare|trends|about)\b/);
+  const m = location.hash.match(/^#\/(overview|songs|compare|genre|trends|about)\b/);
   return m ? m[1] : null;
 }
 
@@ -42,8 +42,7 @@ function navigate() {
 const LOADERS = {
   exportify: loadExportifyFiles,
   streaming: loadStreamingFiles,
-  "compare-a": loadPlaylistA,
-  "compare-b": loadPlaylistB,
+  "compare-comparison": loadComparisonPlaylist,
 };
 
 function wireDropzone(zone) {

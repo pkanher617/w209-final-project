@@ -1,33 +1,33 @@
-/* Compare view: upload two separate Exportify playlists and see their
-   average audio-feature profiles overlaid on one radar, plus a quick
-   side-by-side stats table. Kept independent of the main library
-   (store.tracks) used by Song Analysis/Genre, which merges every upload
-   into one combined set — Compare needs the two playlists to stay separate. */
+/* Compare view: overlays a second "comparison" playlist against the same
+   main library (store.tracks) used by Song Analysis and Genre — uploading
+   on any of those three pages fills the same shared library, so Compare only
+   ever needs ONE new upload of its own. The comparison playlist is kept in
+   this module's own local state, never merged into the shared store. */
 
 /* global d3 */
 
-import { FEATURES, featureFormat, parseExportifyFiles, computeTrackStats } from "../data.js";
+import { store, FEATURES, featureFormat, parseExportifyFiles, computeTrackStats } from "../data.js";
 import { radarChart, renderDataTable } from "../charts.js";
 
 const state = {
-  a: null, // { tracks, stats, names } | null
-  b: null,
+  comparison: null, // { tracks, stats, names } | null
 };
 
-export async function loadPlaylistA(files) {
+export async function loadComparisonPlaylist(files) {
   const { tracks, names } = await parseExportifyFiles(files);
-  state.a = { tracks, stats: computeTrackStats(tracks), names };
+  state.comparison = { tracks, stats: computeTrackStats(tracks), names };
   renderCompare();
 }
 
-export async function loadPlaylistB(files) {
-  const { tracks, names } = await parseExportifyFiles(files);
-  state.b = { tracks, stats: computeTrackStats(tracks), names };
+function clearLibrary() {
+  store.tracks = null;
+  store.trackStats = null;
+  store.exportifyFiles = [];
   renderCompare();
 }
 
-function clearSlot(letter) {
-  state[letter] = null;
+function clearComparison() {
+  state.comparison = null;
   renderCompare();
 }
 
@@ -36,10 +36,10 @@ export function renderCompare() {
   const gate = root.querySelector(".gate");
   const loaded = root.querySelector(".loaded");
 
-  renderSlot("a");
-  renderSlot("b");
+  renderLibrarySlot();
+  renderComparisonSlot();
 
-  const ready = state.a && state.b;
+  const ready = store.tracks && state.comparison;
   gate.hidden = ready;
   loaded.hidden = !ready;
   if (!ready) return;
@@ -49,9 +49,31 @@ export function renderCompare() {
   renderRadar();
 }
 
-function renderSlot(letter) {
-  const slot = document.getElementById(`compare-slot-${letter}`);
-  const info = state[letter];
+function renderLibrarySlot() {
+  const slot = document.getElementById("compare-slot-library");
+  const dropzone = slot.querySelector(".dropzone");
+  const summary = slot.querySelector(".data-status");
+
+  if (!store.tracks) {
+    dropzone.hidden = false;
+    summary.hidden = true;
+    return;
+  }
+  dropzone.hidden = true;
+  summary.hidden = false;
+  summary.replaceChildren();
+  summary.appendChild(document.createTextNode(
+    `${d3.format(",")(store.tracks.length)} tracks from ${store.exportifyFiles.join(", ")} · `));
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.textContent = "replace file";
+  btn.addEventListener("click", clearLibrary);
+  summary.appendChild(btn);
+}
+
+function renderComparisonSlot() {
+  const slot = document.getElementById("compare-slot-comparison");
+  const info = state.comparison;
   const dropzone = slot.querySelector(".dropzone");
   const summary = slot.querySelector(".data-status");
 
@@ -67,27 +89,32 @@ function renderSlot(letter) {
     `${d3.format(",")(info.tracks.length)} tracks from ${info.names.join(", ")} · `));
   const btn = document.createElement("button");
   btn.type = "button";
-  btn.textContent = "replace";
-  btn.addEventListener("click", () => clearSlot(letter));
+  btn.textContent = "replace file";
+  btn.addEventListener("click", clearComparison);
   summary.appendChild(btn);
 }
 
 function renderStatus(loaded) {
   const el = loaded.querySelector(".data-status");
   el.replaceChildren();
-  const addPart = (letter, label) => {
-    const info = state[letter];
-    el.appendChild(document.createTextNode(
-      `${label}: ${d3.format(",")(info.tracks.length)} tracks from ${info.names.join(", ")} `));
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.textContent = "replace";
-    btn.addEventListener("click", () => clearSlot(letter));
-    el.appendChild(btn);
-  };
-  addPart("a", "Playlist A");
+
+  el.appendChild(document.createTextNode(
+    `Library: ${d3.format(",")(store.tracks.length)} tracks from ${store.exportifyFiles.join(", ")} `));
+  const btnLib = document.createElement("button");
+  btnLib.type = "button";
+  btnLib.textContent = "replace file";
+  btnLib.addEventListener("click", clearLibrary);
+  el.appendChild(btnLib);
+
   el.appendChild(document.createTextNode(" · "));
-  addPart("b", "Playlist B");
+
+  el.appendChild(document.createTextNode(
+    `Comparison playlist: ${d3.format(",")(state.comparison.tracks.length)} tracks from ${state.comparison.names.join(", ")} `));
+  const btnCmp = document.createElement("button");
+  btnCmp.type = "button";
+  btnCmp.textContent = "replace file";
+  btnCmp.addEventListener("click", clearComparison);
+  el.appendChild(btnCmp);
 }
 
 function topGenre(tracks) {
@@ -109,21 +136,26 @@ function renderStats() {
   const el = document.getElementById("compare-stats");
   el.replaceChildren();
 
+  const libTracks = store.tracks;
+  const libStats = store.trackStats;
+  const cmpTracks = state.comparison.tracks;
+  const cmpStats = state.comparison.stats;
+
   const rows = [
-    ["Tracks", d3.format(",")(state.a.tracks.length), d3.format(",")(state.b.tracks.length)],
+    ["Tracks", d3.format(",")(libTracks.length), d3.format(",")(cmpTracks.length)],
     ["Avg. popularity",
-      state.a.stats.popularity.mean != null ? `${d3.format(".0f")(state.a.stats.popularity.mean)} / 100` : "—",
-      state.b.stats.popularity.mean != null ? `${d3.format(".0f")(state.b.stats.popularity.mean)} / 100` : "—"],
+      libStats.popularity.mean != null ? `${d3.format(".0f")(libStats.popularity.mean)} / 100` : "—",
+      cmpStats.popularity.mean != null ? `${d3.format(".0f")(cmpStats.popularity.mean)} / 100` : "—"],
     ["Top genre",
-      formatTopGenre(topGenre(state.a.tracks), state.a.tracks.length),
-      formatTopGenre(topGenre(state.b.tracks), state.b.tracks.length)],
+      formatTopGenre(topGenre(libTracks), libTracks.length),
+      formatTopGenre(topGenre(cmpTracks), cmpTracks.length)],
   ];
 
   const table = document.createElement("table");
   table.className = "compare-stats-table";
   const thead = document.createElement("thead");
   const hr = document.createElement("tr");
-  for (const label of ["", "Playlist A", "Playlist B"]) {
+  for (const label of ["", "Library", "Comparison playlist"]) {
     const th = document.createElement("th");
     th.textContent = label;
     hr.appendChild(th);
@@ -150,19 +182,21 @@ function renderStats() {
 
 function renderRadar() {
   const chartEl = document.getElementById("compare-radar");
+  const libStats = store.trackStats;
+  const cmpStats = state.comparison.stats;
   const axes = FEATURES.map((f) => ({
     label: f.label,
     desc: f.desc,
-    norm: state.a.stats[f.key].meanNorm,
-    rawText: featureFormat(f, state.a.stats[f.key].mean),
-    avgNorm: state.b.stats[f.key].meanNorm,
-    avgRawText: featureFormat(f, state.b.stats[f.key].mean),
+    norm: libStats[f.key].meanNorm,
+    rawText: featureFormat(f, libStats[f.key].mean),
+    avgNorm: cmpStats[f.key].meanNorm,
+    avgRawText: featureFormat(f, cmpStats[f.key].mean),
   }));
-  radarChart(chartEl, axes, { songLabel: "Playlist A", avgLabel: "Playlist B" });
+  radarChart(chartEl, axes, { songLabel: "Library", avgLabel: "Comparison playlist" });
 
   const slot = document.getElementById("compare-radar-table");
   renderDataTable(slot,
-    ["Feature", "Playlist A", "Playlist B"],
+    ["Feature", "Library", "Comparison playlist"],
     axes.map((ax) => [ax.label, ax.rawText, ax.avgRawText]),
     "Data table — audio-feature comparison");
 }
