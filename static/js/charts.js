@@ -34,13 +34,19 @@ const tip = (() => {
     }
     return el;
   }
-  function show(evt, { title, rows = [] }) {
+  function show(evt, { title, desc, rows = [] }) {
     const t = ensure();
     t.replaceChildren();
     if (title) {
       const d = document.createElement("div");
       d.className = "tip-title";
       d.textContent = title;
+      t.appendChild(d);
+    }
+    if (desc) {
+      const d = document.createElement("div");
+      d.className = "tip-desc";
+      d.textContent = desc;
       t.appendChild(d);
     }
     for (const r of rows) {
@@ -193,6 +199,8 @@ export function columnChart(el, data, {
   height = 300,
   valueFmt = (v) => d3.format(",.1f")(v),
   ariaName = (d) => `${d.label}: ${valueFmt(d.value)}`,
+  onBarClick = null,
+  selectedLabel = null,
 } = {}) {
   const width = chartWidth(el);
   const m = { top: 22, right: 8, bottom: 28, left: 46 };
@@ -215,6 +223,8 @@ export function columnChart(el, data, {
     .attr("y1", y(0)).attr("y2", y(0))
     .attr("stroke", COLORS.axis);
 
+  const isSelected = (d) => selectedLabel != null && d.label === selectedLabel;
+
   const barW = Math.min(x.bandwidth(), 24);
   const bars = svg.append("g")
     .selectAll("path")
@@ -223,7 +233,7 @@ export function columnChart(el, data, {
     .attr("d", (d) => roundedColumnPath(
       x(d.label) + (x.bandwidth() - barW) / 2, y(d.value), barW,
       Math.max(0, y(0) - y(d.value)), 4))
-    .attr("fill", COLORS.series);
+    .attr("fill", (d) => (isSelected(d) ? COLORS.seriesLift : COLORS.series));
 
   // x tick labels — thin out when crowded
   const every = Math.ceil(data.length / Math.floor((width - m.left - m.right) / 42));
@@ -261,9 +271,9 @@ export function columnChart(el, data, {
     .attr("height", height - m.top - m.bottom)
     .attr("fill", "transparent")
     .attr("tabindex", 0)
-    .attr("role", "img")
-    .attr("aria-label", ariaName)
-    .style("cursor", "default")
+    .attr("role", onBarClick ? "button" : "img")
+    .attr("aria-label", (d) => ariaName(d) + (onBarClick ? " — activate to see songs" : ""))
+    .style("cursor", onBarClick ? "pointer" : "default")
     .on("pointerenter focus", function (evt, d) {
       bars.filter((b) => b === d).attr("fill", COLORS.seriesLift);
       const e = evt.clientX != null ? evt : fakeEventFor(this);
@@ -271,8 +281,17 @@ export function columnChart(el, data, {
     })
     .on("pointermove", (evt) => tip.move(evt))
     .on("pointerleave blur", (evt, d) => {
-      bars.filter((b) => b === d).attr("fill", COLORS.series);
+      bars.filter((b) => b === d).attr("fill", isSelected(d) ? COLORS.seriesLift : COLORS.series);
       tip.hide();
+    })
+    .on("click", (evt, d) => {
+      if (onBarClick && d.value > 0) onBarClick(d);
+    })
+    .on("keydown", (evt, d) => {
+      if ((evt.key === "Enter" || evt.key === " ") && onBarClick && d.value > 0) {
+        evt.preventDefault();
+        onBarClick(d);
+      }
     });
 }
 
@@ -289,6 +308,8 @@ export function histogramChart(el, values, {
   bins = 24,
   xFmt = d3.format("~g"),
   unitLabel = "songs",
+  onBinClick = null,
+  selectedBin = null,
 } = {}) {
   const width = chartWidth(el);
   const m = { top: 22, right: 14, bottom: 30, left: 46 };
@@ -309,6 +330,8 @@ export function histogramChart(el, values, {
     .attr("y1", y(0)).attr("y2", y(0))
     .attr("stroke", COLORS.axis);
 
+  const isSelected = (b) => selectedBin != null && b.x0 === selectedBin.x0 && b.x1 === selectedBin.x1;
+
   const bars = svg.append("g")
     .selectAll("path")
     .data(binned.filter((b) => b.length > 0))
@@ -318,7 +341,7 @@ export function histogramChart(el, values, {
       const bw = Math.max(1, x(b.x1) - x(b.x0) - 2);
       return roundedColumnPath(bx, y(b.length), bw, Math.max(0, y(0) - y(b.length)), 4);
     })
-    .attr("fill", COLORS.series);
+    .attr("fill", (b) => (isSelected(b) ? COLORS.seriesLift : COLORS.series));
 
   // x axis ticks
   svg.append("g")
@@ -343,8 +366,10 @@ export function histogramChart(el, values, {
     .attr("height", height - m.top - m.bottom)
     .attr("fill", "transparent")
     .attr("tabindex", (b) => (b.length ? 0 : null))
-    .attr("role", "img")
-    .attr("aria-label", (b) => `${xFmt(b.x0)} to ${xFmt(b.x1)}: ${b.length} ${unitLabel}`)
+    .attr("role", (b) => (onBinClick && b.length ? "button" : "img"))
+    .attr("aria-label", (b) => `${xFmt(b.x0)} to ${xFmt(b.x1)}: ${b.length} ${unitLabel}`
+      + (onBinClick && b.length ? " — activate to see songs" : ""))
+    .style("cursor", (b) => (onBinClick && b.length ? "pointer" : "default"))
     .on("pointerenter focus", function (evt, b) {
       bars.filter((d) => d === b).attr("fill", COLORS.seriesLift);
       const e = evt.clientX != null ? evt : fakeEventFor(this);
@@ -355,8 +380,17 @@ export function histogramChart(el, values, {
     })
     .on("pointermove", (evt) => tip.move(evt))
     .on("pointerleave blur", (evt, b) => {
-      bars.filter((d) => d === b).attr("fill", COLORS.series);
+      bars.filter((d) => d === b).attr("fill", isSelected(b) ? COLORS.seriesLift : COLORS.series);
       tip.hide();
+    })
+    .on("click", (evt, b) => {
+      if (onBinClick && b.length) onBinClick(b);
+    })
+    .on("keydown", (evt, b) => {
+      if ((evt.key === "Enter" || evt.key === " ") && onBinClick && b.length) {
+        evt.preventDefault();
+        onBinClick(b);
+      }
     });
 
   return binned;
@@ -628,7 +662,7 @@ export function radarChart(el, axes, {
       dots.attr("r", (d) => (d === ax ? 5.5 : 3.5));
       const rows = [{ label: songLabel, value: ax.rawText, color: COLORS.series }];
       if (ax.avgRawText != null) rows.push({ label: avgLabel, value: ax.avgRawText, color: COLORS.context });
-      tip.show(evt, { title: ax.label, rows });
+      tip.show(evt, { title: ax.label, desc: ax.desc, rows });
     })
     .on("pointerleave", () => {
       dots.attr("r", 3.5);

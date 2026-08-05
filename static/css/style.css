@@ -14,6 +14,7 @@
   --grid: #2c2c2a;               /* hairline gridlines */
   --axis: #3a3a37;               /* baseline / axis rules */
   --accent: #1db954;             /* UI accent (text, nav, focus) */
+  --accent-wash: rgba(29, 185, 84, 0.14); /* hover wash for accent-bordered controls */
   --series-1: #1aad4e;           /* chart mark green (validated) */
   --series-context: #898781;     /* de-emphasis series (library average) */
 }
@@ -81,13 +82,10 @@ h2 { font-size: 1.02rem; margin: 0 0 0.75rem; color: var(--text-primary); }
 p.lead { color: var(--text-secondary); max-width: 46rem; }
 p.note { color: var(--muted); font-size: 0.82rem; margin: -0.4rem 0 0.75rem; }
 
-.view-head {
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.75rem;
-}
+.view-head { margin-bottom: 1rem; }
+.view-head h1 { margin-bottom: 0.3rem; }
+
+.page-desc { color: var(--text-secondary); font-size: 0.92rem; margin: 0 0 0.4rem; max-width: 54rem; }
 
 .data-status { color: var(--muted); font-size: 0.85rem; margin: 0; }
 .data-status button {
@@ -101,8 +99,50 @@ p.note { color: var(--muted); font-size: 0.82rem; margin: -0.4rem 0 0.75rem; }
   text-decoration: underline;
 }
 
+/* ── overview / landing ───────────────────────────────────────── */
+.overview { max-width: 66rem; margin: 1rem auto 0; }
+.overview .lead { max-width: 50rem; margin-bottom: 2rem; }
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.overview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.4rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.overview-card:hover { border-color: var(--accent); }
+.overview-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.overview-card .preview { width: 100%; height: 96px; }
+.overview-card h2 { margin: 0; font-size: 1.05rem; color: var(--text-primary); }
+.overview-card p { margin: 0; color: var(--text-secondary); font-size: 0.88rem; }
+.overview-card .overview-needs { color: var(--muted); font-size: 0.78rem; }
+.overview-card .overview-cta { color: var(--accent); font-weight: 600; font-size: 0.85rem; margin-top: 0.2rem; }
+
 /* ── upload gates ─────────────────────────────────────────────── */
 .gate { max-width: 46rem; margin: 2.5rem auto; }
+.gate .lead { margin-bottom: 1.1rem; }
+
+.gate-steps {
+  margin: 0 0 0.25rem;
+  padding-left: 1.35rem;
+  color: var(--text-secondary);
+}
+
+.gate-steps li { margin: 0 0 0.5rem; padding-left: 0.15rem; }
+.gate-steps li:last-child { margin-bottom: 0; }
+.gate-steps strong { color: var(--text-primary); font-weight: 600; }
 
 .dropzone {
   margin-top: 1.25rem;
@@ -174,22 +214,22 @@ p.note { color: var(--muted); font-size: 0.82rem; margin: -0.4rem 0 0.75rem; }
 
 .chip {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--accent);
   border-radius: 999px;
-  color: var(--text-secondary);
+  color: var(--accent);
   padding: 0.3rem 0.85rem;
   font: inherit;
   font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
-.chip:hover { color: var(--text-primary); border-color: var(--axis); }
+.chip:hover { background: var(--accent-wash); }
 
 .chip.active {
   color: var(--page);
   background: var(--accent);
   border-color: var(--accent);
-  font-weight: 600;
 }
 
 /* ── song lists (top 10 / search results) ─────────────────────── */
@@ -289,6 +329,39 @@ table.detail-table th {
 table.detail-table td { color: var(--text-primary); padding: 0.22rem 0; }
 
 .feature-desc { color: var(--text-secondary); font-size: 0.9rem; max-width: 40rem; }
+
+/* ── histogram / bar drill-down ───────────────────────────────── */
+.bin-drill {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem 1.1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.bin-drill-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.15rem;
+}
+
+.bin-drill-head h3 { margin: 0; font-size: 0.95rem; color: var(--text-primary); }
+
+.bin-drill-close {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  flex: none;
+}
+
+.bin-drill-list { max-height: 280px; overflow-y: auto; margin-top: 0.5rem; }
 
 /* ── legend (shared by charts) ────────────────────────────────── */
 .legend {
@@ -422,7 +495,7 @@ details.data-table th { color: var(--muted); font-weight: 500; }
   border-radius: 8px;
   padding: 0.5rem 0.7rem;
   font-size: 0.8rem;
-  max-width: 280px;
+  max-width: 300px;
   z-index: 100;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
@@ -433,6 +506,14 @@ details.data-table th { color: var(--muted); font-weight: 500; }
   color: var(--text-primary);
   font-weight: 600;
   margin-bottom: 2px;
+}
+
+#viz-tooltip .tip-desc {
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  line-height: 1.4;
+  white-space: normal;
+  margin: 2px 0 7px;
 }
 
 #viz-tooltip .tip-row {

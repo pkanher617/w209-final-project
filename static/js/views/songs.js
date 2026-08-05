@@ -10,6 +10,8 @@ const state = {
   mode: "song",   // "song" | "feature"
   song: null,
   feature: null,
+  bin: null,      // drill-down selection on the current feature's chart:
+                   // {kind: "range", x0, x1} | {kind: "category", label, catValue}
 };
 
 const section = () => document.getElementById("view-songs");
@@ -78,6 +80,7 @@ function renderChips() {
         state.mode = "feature";
         state.feature = f.key;
       }
+      state.bin = null; // switching features invalidates any drill-down selection
       renderChips();
       renderCenter();
     });
@@ -118,6 +121,7 @@ function songButton(track, { rank = null, valueText = null } = {}) {
   btn.addEventListener("click", () => {
     state.mode = "song";
     state.feature = null;
+    state.bin = null;
     state.song = track;
     renderChips();
     renderTopList();
@@ -231,6 +235,7 @@ function renderSongPanel(center) {
     const raw = featureValue(t, f);
     return {
       label: f.label,
+      desc: f.desc,
       norm: featureNorm(t, f, stats),
       rawText: featureFormat(f, raw),
       avgNorm: stats[f.key].meanNorm,
@@ -278,19 +283,32 @@ function renderFeaturePanel(center) {
   if (f.discrete && f.categories) {
     const counts = d3.rollup(values, (v) => v.length, (v) => Math.round(v));
     const data = f.categories.map((c) => ({ label: c.label, value: counts.get(c.value) ?? 0 }));
-    columnChart(chartEl, data, { valueFmt: d3.format(","), height: 320 });
+    columnChart(chartEl, data, {
+      valueFmt: d3.format(","), height: 320,
+      selectedLabel: state.bin?.kind === "category" ? state.bin.label : null,
+      onBarClick: (d) => {
+        const cat = f.categories.find((c) => c.label === d.label);
+        state.bin = { kind: "category", label: d.label, catValue: cat?.value };
+        renderCenter();
+      },
+    });
+    if (state.bin?.kind === "category") renderBinDrill(center, f, state.bin);
     center.appendChild(slot);
     renderDataTable(slot, [f.label, "Songs"], data.map((d) => [d.label, d.value]),
       `Data table — songs by ${f.label.toLowerCase()}`);
   } else {
-    const xFmt = f.key === "release_year" ? d3.format("d")
-      : f.key === "length" ? (v) => featureFormat(f, v)
-        : d3.format("~g");
+    const xFmt = histFormatter(f);
     const bins = histogramChart(chartEl, values, {
       xFmt,
       bins: f.key === "release_year" ? Math.min(30, new Set(values).size) : 24,
       unitLabel: "songs",
+      selectedBin: state.bin?.kind === "range" ? state.bin : null,
+      onBinClick: (b) => {
+        state.bin = { kind: "range", x0: b.x0, x1: b.x1 };
+        renderCenter();
+      },
     });
+    if (state.bin?.kind === "range") renderBinDrill(center, f, state.bin);
     center.appendChild(slot);
     renderDataTable(slot, ["Range", "Songs"],
       bins.filter((b) => b.length).map((b) => [`${xFmt(b.x0)} – ${xFmt(b.x1)}`, b.length]),
@@ -301,4 +319,69 @@ function renderFeaturePanel(center) {
   n.className = "note";
   n.textContent = `${d3.format(",")(values.length)} of ${d3.format(",")(store.tracks.length)} tracks have a ${f.label.toLowerCase()} value.`;
   center.appendChild(n);
+}
+
+function histFormatter(f) {
+  if (f.key === "release_year") return d3.format("d");
+  if (f.key === "length") return (v) => featureFormat(f, v);
+  return d3.format("~g");
+}
+
+function tracksForBin(f, bin) {
+  if (bin.kind === "category") {
+    return store.tracks.filter((t) => {
+      const v = featureValue(t, f);
+      return v != null && Math.round(v) === bin.catValue;
+    });
+  }
+  return store.tracks.filter((t) => {
+    const v = featureValue(t, f);
+    return v != null && v >= bin.x0 && v <= bin.x1;
+  });
+}
+
+// Inline expand under the chart — the same "click to drill down" language
+// the Genre page already uses for its bubble chart.
+function renderBinDrill(center, f, bin) {
+  const tracks = tracksForBin(f, bin);
+
+  const panel = document.createElement("div");
+  panel.className = "bin-drill";
+
+  const head = document.createElement("div");
+  head.className = "bin-drill-head";
+  const h3 = document.createElement("h3");
+  h3.textContent = bin.kind === "range"
+    ? `Songs with ${f.label.toLowerCase()} between ${histFormatter(f)(bin.x0)} and ${histFormatter(f)(bin.x1)}`
+    : `Songs with ${f.label.toLowerCase()} "${bin.label}"`;
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "bin-drill-close";
+  closeBtn.textContent = "Close";
+  closeBtn.addEventListener("click", () => {
+    state.bin = null;
+    renderCenter();
+  });
+  head.appendChild(h3);
+  head.appendChild(closeBtn);
+  panel.appendChild(head);
+
+  const count = document.createElement("p");
+  count.className = "note";
+  count.textContent = `${d3.format(",")(tracks.length)} song${tracks.length === 1 ? "" : "s"}`;
+  panel.appendChild(count);
+
+  const list = document.createElement("ol");
+  list.className = "song-list bin-drill-list";
+  const shown = [...tracks].sort((a, b) => (b.popularity ?? -1) - (a.popularity ?? -1)).slice(0, 50);
+  shown.forEach((t) => list.appendChild(songButton(t)));
+  panel.appendChild(list);
+  if (tracks.length > shown.length) {
+    const more = document.createElement("p");
+    more.className = "note";
+    more.textContent = `Showing the top ${shown.length} of ${d3.format(",")(tracks.length)} by popularity.`;
+    panel.appendChild(more);
+  }
+
+  center.appendChild(panel);
 }

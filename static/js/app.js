@@ -8,20 +8,21 @@ import { renderGenre } from "./views/genre.js";
 import { renderTrends } from "./views/trends.js";
 
 const ROUTES = {
+  overview: () => {}, // static markup, nothing to render
   songs: renderSongs,
   genre: renderGenre,
   trends: renderTrends,
 };
 
 function currentRoute() {
-  const m = location.hash.match(/^#\/(songs|genre|trends)\b/);
+  const m = location.hash.match(/^#\/(overview|songs|genre|trends)\b/);
   return m ? m[1] : null;
 }
 
 function navigate() {
   const route = currentRoute();
   if (!route) {
-    location.replace("#/songs"); // hashchange re-enters navigate()
+    location.replace("#/overview"); // hashchange re-enters navigate()
     return;
   }
   for (const name of Object.keys(ROUTES)) {
